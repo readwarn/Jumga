@@ -164,7 +164,7 @@ export default {
            }
            this.$http.post('http://localhost:3000/flutter/pay',pay)
           .then(res=>{
-              console.log(res.data);
+               window.location.href = res.data.flutterData.data.link;
           })
          }
         },

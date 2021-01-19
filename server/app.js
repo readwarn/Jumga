@@ -15,11 +15,11 @@ const product=require('./routes/product');
 const app = express();
 mongoose.connect(process.env.MONGODB_URI,{useNewUrlParser:true, useUnifiedTopology:true, useFindAndModify: false});
 mongoose.connection.on('connected', function(){
-  console.log('connected');
+  console.log('connected to db');
 });
 mongoose.connection.on('error', function(){console.log('eror')})
 .then(() => {
-   console.log('connected to db')
+   
 })
 .catch(err => { 
   console.error('App starting error:', err.stack);

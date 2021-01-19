@@ -1,24 +1,10 @@
 # jumga
 
 ## Project setup
-```
-npm install
-```
 
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
+* Clone this repository on your computer
+* cd into the server directory and run 'npm install' then run 'npm start'
+* cd into the client directory and run 'npm install' then run 'npm run serve'
+* goto [http://localhost:8080/](http://localhost:8080/).
 
-### Compiles and minifies for production
-```
-npm run build
-```
 
-### Lints and fixes files
-```
-npm run lint
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).

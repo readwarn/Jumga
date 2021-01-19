@@ -1,7 +1,6 @@
 const express=require('express');
 const router=express.Router();
 const axios = require('axios');
-const fetch = require('fetch');
 const Payment = require('../models/payment');
 const Auth =require('../middleware/authware');
 axios.defaults.withCredentials = true;
@@ -112,13 +111,13 @@ router.post('/approval/pay',(req,res)=>{
                name:req.user.username
             },
             customizations:{
-               title:"Approval Payment",
+               title:"Approval PaymenT",
                description:"Pay your Jumga approval fee to enjoy of top tier service",
                logo:"https://images.unsplash.com/photo-1472851294608-062f824d29cc?ixid=MXwxMjA3fDB8MHxzZWFyY2h8MXx8c3RvcmV8ZW58MHx8MHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=60"
             }
         }
     }
-    console.log(pay);
+    console.log(pay.currency, typeof pay.currency);
     axios.post('https://api.flutterwave.com/v3/payments',pay)
     .then(response=>{
         res.json({
