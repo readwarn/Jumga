@@ -50,7 +50,7 @@ export default {
               }
           },
           makePayment(){
-                // wow Nigeria cuurency is soooo poor
+                // wow Nigeria cuure is soooo poor
                this.loading=true;
                const payment = {
                    amount:this.amount,
