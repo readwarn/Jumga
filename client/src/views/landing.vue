@@ -1,6 +1,6 @@
 <template>
     <div class="land">
-        <navbar />
+        <navbar cc='NG' />
         <div class="content">
               <section>
                 <div class="banner">
@@ -15,7 +15,7 @@
                         </p>
                         <div class="input-box">
                              <button @click="$router.push('/onboard')">BE A SELLER</button>
-                             <button @click="$router.push('/register/buyer')">GET STARTED</button>
+                             <button @click="$router.push('/buyer/register')">GET STARTED</button>
                         </div>
                     </div>
                     <img id="land" src="../assets/land.svg" alt="land">

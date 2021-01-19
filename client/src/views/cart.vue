@@ -1,8 +1,16 @@
 <template>
     <div class="order-box">
             <nav><h3>Jumga</h3></nav>
-            <loader v-if="!loading" />
-            <div class="content" v-if="loading">
+            <loader v-if="loading" />
+            <div class="content" v-if="!loading">
+                <div class="address-popup" v-if="showAddress">
+                        <div> 
+                            <h4>{{(total + delivery)}}</h4>
+                            <label for="address">Address</label>
+                            <textarea name="add" id="address" cols="30" v-model="address" rows="10"></textarea>
+                            <button @click="checkout()" >PAY NOW</button>
+                        </div>
+                </div>
                 <div class="item heading">
                     <div class="item-box heading">
                         <p>Item Details</p>
@@ -24,11 +32,12 @@
                 </div>
                 <div class="item" v-for="(item,index) in cart.items" :key="index">
                     <div class="item-box">
-                        <img src="../assets/product.svg" class="avi" alt="product">
+                        <img :src="item.product.displayPicture" class="avi" alt="product">
                         <div class="detail">
                             <p>Seller: {{item.shop.name}}</p>
                             <router-link to="/">{{item.product.name}}</router-link>
-                            <div class="delete" @click="deleteItem()">
+                            <img id="load" v-if="deleting" src="https://s2.svgbox.net/loaders.svg?ic=tail-spin" height="30" width="30" alt="updating">
+                            <div class="delete" v-if="!deleting" @click="deleteItem(item)">
                                 <img src="https://s2.svgbox.net/hero-outline.svg?color=red&ic=x" height="20" width="20" alt="delete">
                                 <p>Remove</p>
                             </div>
@@ -36,7 +45,8 @@
                     </div>
                     <div class="item-tags">
                         <div class="qty field">
-                            <input type="number" id="units" :value="item.quantity">
+                            <update-item-button  v-on:minusclick="decreaseItem(item,index)" :disable="updating" v-on:plusclick="increaseItem(item,index)" />
+                            <input type="number" id="units" v-model="units">
                             <p class="subtitle">Quantity</p>
                         </div>
                         <div class="price field">
@@ -59,7 +69,7 @@
                 </div>
                 <div class="total">
                       <button @click="$router.push(`/markets/${this.$route.params.id}`)">CONTINUE SHOPPING</button>
-                      <button @click="checkout()">CHECKOUT</button>
+                      <button @click="showAddress=true">CHECKOUT</button>
                 </div>
 
             </div>
@@ -68,18 +78,53 @@
 
 <script>
 import loader from '../components/loader.vue'
+import UpdateItemButton from '../components/updateItemButton.vue';
 export default {
     name:"Order",
-    components:{loader},
+    components:{loader, UpdateItemButton},
     data(){
         return{
             loading:true,
+            updating:false,
+            showAddress:false,
+            deleting:false,
+            address:'Ibadan',
+            units:1,
+            updating:false,
             cart:'',
             total:1,
             delivery:2,
         }
     },
     methods:{
+         decreaseItem(item,index){
+             this.units-=1;
+             this.updateItem(item,index);
+         },
+         increaseItem(item,index){
+             this.units+=1;
+             this.updateItem(item,index);
+         },
+         updateItem(item,index){
+            if(this.units>item.product.qty){
+                this.error='Not enough products from seller';
+             }else{
+                  this.updating=true;
+                  this.$http.put(`http://localhost:3000/items/${item._id}`,{quantity:this.units})
+                .then(res=>{
+                    this.updating=false;
+                    this.cart.items.splice(index,1,res.data);
+                })
+             }
+         },
+         deleteItem(item){
+             this.deleting=true;
+             this.$http.delete(`http://localhost:3000/items/${item._id}`)
+            .then(res=>{
+                 this.deleting=false;
+                 this.cart=res.data;
+            })
+         },
          createSubaccount(id,charge){
                return {
                     id:id,
@@ -88,8 +133,12 @@ export default {
                }
          },
          checkout(){
-         let subs=[];
-         this.cart.items.forEach((item,index) => {
+         if(this.address.length<50){
+              this.error='Write a proper address so we wont lose your order'
+         }
+         else{
+               let subs=[];
+               this.cart.items.forEach((item,index) => {
                const newSub = this.createSubaccount(item.shop.accountID,(item.product.price*item.quantity*0.975));
                if(index===0){
                    subs.push(newSub);
@@ -98,24 +147,26 @@ export default {
                       const oldsub=find((sub)=>{sub.id===item.shop.accountID});
                       const oldIndex=subs.indexOf(oldsub);
                       const newCharge=oldsub.transaction_charge + newSub.transaction_charge;
-                      const updatedSub = this.createSubaccount(oldsub.id, newCharge)
+                      const updatedSub = this.createSubaccount(oldsub.id, newCharge);
                       subs.splice(oldIndex,1,updatedSub);
                   }else{
                       subs.push(newSub);
                   }
                }
-         });
+          });
           const cost = this.total + this.delivery;
+          const dispatch = this.createSubaccount('RS_9F16F4F847387A9808A177EC80DB969F',this.delivery*0.8);
+          subs.push(dispatch);
           const pay={
                 amount:cost,
                 country:this.$route.params.id,
                 subaccount:subs
            }
-
            this.$http.post('http://localhost:3000/flutter/pay',pay)
           .then(res=>{
-                console.log(res.data);
+              console.log(res.data);
           })
+         }
         },
     },
     created(){
@@ -124,14 +175,14 @@ export default {
                if(!res.data.loggedIn){
                  this.$router.push('/buyer/login');
                }else{
-                  this.$http.get(`http://localhost:3000/carts/${this.$route.params.id}/myCart`)
+                   this.$http.get(`http://localhost:3000/carts/${this.$route.params.id}/myCart`)
                   .then(res=>{
                       this.loading=false;
                       this.cart=res.data;
                   });
                   this.cart.items.forEach(item => {
                        this.total+=(item.product.price * item.quantity);
-                       this.delivery+=(item.product.delivery*0.8);
+                       this.delivery+=(item.product.delivery);
                   });
                }
         })
@@ -141,6 +192,10 @@ export default {
 </script>
 
 <style scoped>
+img#load{
+    display: block;
+    margin: auto;
+}
 nav{
     padding: 10px 15px;
     position: fixed;
@@ -249,7 +304,7 @@ div.qty input{
     width: 60%;
     padding: 10px;
     display: block;
-    margin: 0 auto;
+    margin: 10px auto 0px auto;
 }
 div.total{
     display: flex;
@@ -268,6 +323,7 @@ div.total button{
     font-weight: 700;
     width: 20%;
 }
+
 div.total button:hover{
    box-shadow: 0px 1px 2px 0px rgba(102,96,102,1);
 }
@@ -289,6 +345,43 @@ div.total h4{
 }
 p.subtitle{
     display: none;
+}
+div.address-popup{
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+div.address-popup div{
+    width: 35%;
+    height: 30%;
+    padding: 10px;
+}
+div.address-popup div h4{
+    color: #219653;
+    font-size: 2rem;
+    margin-bottom: 15px;
+    width: 100%;
+    text-align: right;
+}
+div.address-popup div label{
+    margin-bottom: 5px;
+    font-size: 1rem;
+}
+div.address-popup div button{
+    height: 40px;
+    border: none;
+    outline: none;
+    color: #ffffff;
+    cursor: pointer;
+    width: 60%;
+    display: block;
+    margin: auto;
+}
+div.address-popup div button:hover{
+    box-shadow: 0px 1px 2px 0px rgba(102,96,102,1);
 }
 @media only screen and (max-width: 720px) {
 nav{
@@ -325,6 +418,12 @@ p.subtitle{
 }
 div.total button{
     width: 33%;
+}
+div.address-popup div{
+    width: 90%;
+}
+div.address-popup div h4{
+    font-size: 1.4rem;
 }
 }
 

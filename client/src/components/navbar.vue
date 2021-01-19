@@ -1,19 +1,19 @@
 <template>
 <div @click.self="profile=false">
    <nav>
-        <div class="brand">
+        <div class="brand" @click="$router.push(`/markets/${cc}`)">
            <h3>Jumga</h3>
            <img src="https://s2.svgbox.net/hero-outline.svg?color=219653&ic=shopping-bag" height="30" width="30" alt="brand">
         </div>
         <div class="info">
              <div class="user" @click="showProfile()">
                    <img src="https://s2.svgbox.net/hero-outline.svg?color=005B94&ic=user" height="25" width="25" alt="right">
-                   <p>Rilwan</p>
+                   <p>{{user.username}}</p>
                    <img :class="{'rotate':rotate}" id="caret" src="https://s2.svgbox.net/octicons.svg?color=005B94&ic=chevron-right" height="14" width="14" alt="right">
              </div>
              <div class="profile" v-if="profile">
-                <router-link to="/">My Order</router-link>
-                <button>LOG OUT</button>
+                <router-link :to="cartLink">My Order</router-link>
+                <button @click="logout()">LOG OUT</button>
             </div>
              <router-link to="/">
                  <div class="cart">
@@ -32,16 +32,31 @@
 <script>
 export default {
     name:"Navbar",
+    props:['cc'],
     data(){
         return{
             rotate:false,
-            profile:false
+            profile:false,
+            cartLink:'/cart/NG',
+            user:{
+                username:"Rilwan"
+            }
         }
+    },
+    created(){
+         this.$http.get('http://localhost:3000/users/currentUser')
+        .then(res=>{
+            this.user=res.data;
+        })
+        this.cartLink=`/cart/${this.cc}`
     },
     methods:{
         showProfile(){
             this.profile=!this.profile;
             this.rotate=!this.rotate;
+        },
+        logout(){
+            this.$http.get('http:localhost:3000/auth/logout');
         }
     }
 }
@@ -65,6 +80,9 @@ h3{
     font-size: 2rem;
     line-height: 130%;
     margin-right: 5px;
+}
+div.brand{
+    cursor: pointer;
 }
 div.brand,div.info{
     display: flex;

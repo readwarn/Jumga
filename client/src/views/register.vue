@@ -30,13 +30,19 @@
                </div>
            </div>
            <div class="details" v-if="userDetail">
+                <label for="country">Country</label>
+                <select  id="country" v-model="cc">
+                    <option value="NG">Nigeria</option>
+                    <option value="GH">Kenya</option>
+                    <option value="KE">Ghana</option>
+                </select>
                 <label for="username">Username</label>
                 <input type="text" id="username" v-model="seller.username">
                 <label for="password">Password</label>
                 <input type="text" id="password" v-model="seller.password">
-                <button v-if="$route.params.id==='buyer'">SIGN UP</button>
+                <button v-if="$route.params.id==='buyer'" @click="signUp()">SIGN UP</button>
                 <button @click="showDetail('store')" v-if="$route.params.id==='seller'">Next</button>
-                <p id="huh">Already have an account? <router-link :to="registerRoute">Login</router-link></p>
+                <p id="huh">Already have an account? <router-link :to="loginRoute">Login</router-link></p>
            </div>
             <div class="details" v-if="storeDetail">
                 <label for="storeName">Store Name</label>
@@ -73,6 +79,7 @@
                     <option v-for="(bank,index) in banks" :key="index" :value="bank.code">
                          {{bank.name}}
                     </option>
+                    <option v-if="loading" value="">Refresh Page to get banks</option>
                 </select>
                 <button @click="verifyDetails()" :disabled="verifying">Verify Account</button>
                 <button :disabled="!bankVerified" @click="signUp()">Sign Up</button>
@@ -91,10 +98,12 @@ export default {
                  password:'',
                  shopname:'',
                  shopDescription:'',
+                 country:'',
                  phone:'',
                  address:'',
                  shopID:'RS_9F16F4F847387A9808A177EC80DB969F',
               },
+              loading:true,
               accountName:'',
               accountDetail:false,
               userDetail:true,
@@ -104,6 +113,7 @@ export default {
               bankVerified:false,
               detailsVerified:false,
               verifying:false,
+              cc:'NG',
               country:'NG',
               accountNumber:'',
               banks:[{
@@ -113,7 +123,7 @@ export default {
               error:'',
               errorField:'',
               userBankCode:'',
-              registerRoute:'/register/buyer'
+              loginRoute:'/register/buyer'
           }
       },
       methods:{
@@ -146,8 +156,7 @@ export default {
                         business_name: this.shopname,
                         business_mobile:this.phone,
                         country:this.country,
-                        split_type: "percentage",
-                        split_value: 0.8
+                        split_value: 1
                }
                this.error='';
                this.$http.post('http://localhost:3000/flutter/subaccounts',sub)
@@ -221,12 +230,18 @@ export default {
                }
          },
          signUp(){
-             this.$http.post('http://localhost:3000/auth/seller/register',this.seller)
+             this.seller.country=this.cc;
+             this.$http.post(`http://localhost:3000/auth/${this.$route.params.id}/register`,this.seller)
             .then(res=>{
-               if(res.data.logged){
-                   this.$router.push('/shops/myShop');
-               } 
-               console.log(res.data);
+                if(!res.data.logged){
+                    this.error=res.data.message;
+                 }else{
+                    if(this.$route.params.id==='seller'){
+                          this.$router.push('/shops/myShop');
+                    }else{
+                           this.$router.push(`/markets/${this.cc}`);
+                    }
+                 }
             })
             .catch(err=>{
                 console.log(err.message);
@@ -234,10 +249,11 @@ export default {
          }
       },
       created(){
-             this.registerRoute=`/login/${this.$route.params.id}`;
+             this.loginRoute=`/${this.$route.params.id}/login`;
              this.$http.get(`http://localhost:3000/flutter/banks/NG`).then(res=>{
                     this.banks=res.data.data;
-             })
+                    this.loading=false;
+             });
       }
 }
 </script>

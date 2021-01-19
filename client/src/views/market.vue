@@ -16,7 +16,7 @@
                     <input type="text" id="search">
                 </div>
                 <div class="product-container">
-                     <product v-for="(product,index) in products" :key="index" name="Biro" price="1000" v-on:productclick="$router.push(`/market/${this.params.id}/products/${product._id}`)"/>
+                     <product v-for="(product,index) in products" :key="index" :name="product.name" :price="product.price" v-on:productclick="$router.push(`/market/${this.params.id}/products/${product._id}`)"/>
                 </div>
           </div>
      </div> 
@@ -42,7 +42,7 @@ export default {
                if(!res.data.loggedIn){
                  this.$router.push('/buyer/login');
                }else{
-                   this.$http.get(`http://localhost:3000/products/${this.$router.params.id}`)
+                    this.$http.get(`http://localhost:3000/products/${this.$route.params.id}`)
                    .then(res=>{
                        this.loading=false;
                        this.products=res.data;

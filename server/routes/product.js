@@ -1,12 +1,21 @@
-var express=require('express');
-var router=express.Router();
-var Product=require('../models/product');
-var Shop=require('../models/shop');
-var Auth=require('../middleware/authware');
+const express=require('express');
+const router=express.Router();
+const Product=require('../models/product');
+const Shop=require('../models/shop');
+const Auth=require('../middleware/authware');
 
 router.get('/:cc',(req,res)=>{
      Product.find({country:req.params.cc})
-    .populate('owner')
+    .populate([
+        {
+            path:'owner',
+            model:'User' 
+        },
+        {
+            path:'shop',
+            model:'Shop'
+        }
+    ])
     .exec(function(err,products){
         if(err){
             res.send('error');
@@ -16,8 +25,19 @@ router.get('/:cc',(req,res)=>{
     });
 });
 
-router.get('/my/products',Auth.isLoggedIn,Auth.areYouApproved,(req,res)=>{
-    Product.find({owner:req.user._id},function(err,products){
+router.get('/my/products',Auth.isLoggedIn,(req,res)=>{
+    Product.find({owner:req.user._id})
+    .populate([
+        {
+            path:'owner',
+            model:'User' 
+        },
+        {
+            path:'shop',
+            model:'Shop'
+        }
+    ])
+    .exec(function(err,products){
           if(err){
               res.send('error');
           }else{
@@ -26,8 +46,19 @@ router.get('/my/products',Auth.isLoggedIn,Auth.areYouApproved,(req,res)=>{
     })
 })
 
-router.post('/',Auth.isLoggedIn,(req,res)=>{
-    Product.create(req.body,function(err,product){
+router.post('/',Auth.isLoggedIn,Auth.areYouApproved,(req,res)=>{
+    Product.create(req.body)
+    .populate([
+        {
+            path:'owner',
+            model:'User' 
+        },
+        {
+            path:'shop',
+            model:'Shop'
+        }
+    ])
+    .exec(function(err,product){
         if(err){
             res.send('error')
         }else{
@@ -48,7 +79,16 @@ router.post('/',Auth.isLoggedIn,(req,res)=>{
 
 router.get('/:productID',(req,res)=>{
     Product.findById(req.params.productID)
-    .populate('shop')
+    .populate([
+        {
+            path:'owner',
+            model:'User' 
+        },
+        {
+            path:'shop',
+            model:'Shop'
+        }
+    ])
     .exec(function(err,product){
         if(err){
             res.send('error');
@@ -60,7 +100,18 @@ router.get('/:productID',(req,res)=>{
 })
 
 router.put('/:productID',Auth.isItYours(Product,'productID'),(req,res)=>{
-      Product.findById(req.params.productID,function(err,foundProduct){
+      Product.findById(req.params.productID)
+      .populate([
+        {
+            path:'owner',
+            model:'User' 
+        },
+        {
+            path:'shop',
+            model:'Shop'
+        }
+      ])
+      .exec(function(err,foundProduct){
           if(err){
               res.send('error');
           }else{
@@ -72,7 +123,18 @@ router.put('/:productID',Auth.isItYours(Product,'productID'),(req,res)=>{
 })
 
 router.delete('/:productID',Auth.isItYours(Product,'productID'),(req,res)=>{
-    Product.findByIdAndDelete(req.params.productID,function(err,deletedProduct){
+    Product.findByIdAndDelete(req.params.productID)
+    .populate([
+        {
+            path:'owner',
+            model:'User' 
+        },
+        {
+            path:'shop',
+            model:'Shop'
+        }
+    ])
+    .exec(function(err,deletedProduct){
         if(err){
             res.send('error')
         }else{

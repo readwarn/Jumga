@@ -23,19 +23,19 @@ const routes = [
       import("../views/platforms.vue")
   },
   {
-    path: "/approval",
+    path: "/:id/approval",
     name: "Approval",
     component: () =>
       import("../views/approval.vue")
   },
   {
-    path: "/login/:cc/:id",
+    path: "/:id/login",
     name: "Login",
     component: () =>
       import("../views/login.vue")
   },
   {
-    path: "/register/:cc/:id",
+    path: "/:id/register",
     name: "Register",
     component: () =>
       import("../views/register.vue")

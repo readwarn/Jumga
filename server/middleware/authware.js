@@ -1,7 +1,6 @@
 const User = require('../models/user');
 const Shop = require('../models/shop');
 
-
 module.exports={
     isLoggedIn:(req,res,next)=>{
         if(!req.isAuthenticated()) {
@@ -34,7 +33,7 @@ module.exports={
                     return next();
                 }
                 else{
-                    res.send('You cant edit whats not yours');
+                    res.send('You cant edit what is not yours');
                 }
                 }
             })

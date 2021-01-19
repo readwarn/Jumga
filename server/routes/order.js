@@ -1,10 +1,10 @@
-var express=require('express');
-var router=express.Router();
-var Order=require('../models/order');
+const express=require('express');
+const router=express.Router();
+const Order=require('../models/order');
 const Auth = require('../middleware/authware')
 
-router.post('/',(req,res)=>{
-    Order.create(req.body.order,function(err,newOrder){
+router.post('/',Auth.isLoggedIn,(req,res)=>{
+    Order.create(req.body,function(err,newOrder){
         if(err){
             res.send('erorr');
         }else{
@@ -12,10 +12,15 @@ router.post('/',(req,res)=>{
             newOrder.save();
             res.json(newOrder);
         }
+    });
+    req.body.cart.items.foreach(item=>{
+        item.product.qty=item.product.qty - item.quantity;
+        item.product.save();
     })
+
 })
 
-router.get('/:cc/myOrder',(req,res)=>{
+router.get('/:cc/myOrder',Auth.isLoggedIn,(req,res)=>{
     Order.find({
         country:req.params.cc,
         owner:req.user._id
@@ -32,7 +37,7 @@ router.get('/:cc/myOrder',(req,res)=>{
     })
     .exec(function(err,foundOrder){
         if(err){
-            res.send('error');
+            return res.send('error');
         }else{
             res.json(foundOrder);
         }
@@ -42,7 +47,7 @@ router.get('/:cc/myOrder',(req,res)=>{
 router.delete('/:orderID',Auth.isItYours(Order,'orderID'),(req,res)=>{
     Order.findByIdAndDelete(req.params.orderID,function(err,deletedOrder){
         if(err){
-            res.send('error');
+            return res.send('error');
         }else{
             res.json(deletedOrder);
         }

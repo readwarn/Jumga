@@ -8,14 +8,14 @@
                <p class="subtitle">Get across to people in Nigeria, Ghana, Kenya and UK easily. Join Jumga!</p>
                <ul>
                    <li> <img src="../assets/Subtract.svg" alt="bullet"> <p>Earn more money</p></li>
-                   <li> <img src="../assets/Subtract.svg" alt="bullet"> <p> Communication is easy</p></li>
+                   <li> <img src="../assets/Subtract.svg" alt="bullet"> <p>Communication is easy</p></li>
                    <li> <img src="../assets/Subtract.svg" alt="bullet"> <p>You are given a dispatch rider</p> </li>
                    <li> <img src="../assets/Subtract.svg" alt="bullet"> <p>You are in control</p></li>
                    <li> <img src="../assets/Subtract.svg" alt="bullet"> <p>It is entirely online, no need for meeting</p></li>
                </ul>
                <div class="button-box">
-                      <button  @click="$router.push('/register/seller')">GET STARTED</button>
-                      <button  @click="$router.push('/login/seller')">LOGIN</button>
+                      <button  @click="$router.push('/seller/register')">GET STARTED</button>
+                      <button  @click="$router.push('/seller/login')">LOGIN</button>
                </div>
          </section>
          <section class="right">

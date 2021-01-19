@@ -7,9 +7,10 @@
             <p>Add new product</p>
             <p>{{error}}</p>
             <label for="file" class="file" :style="{backgroundImage:product.displayPicture}">
+                <img :src="product.displayPicture" alt="loader" id="bg">
                 <input type="file" name="file" id="file" @change="uploadProductImage">
                 <img src="../assets/Cloud.svg" alt="">
-                <p>Browse files</p>
+                <p>click to choose image</p>
             </label>
             <label for="name">Product name</label>
             <input type="text" id="name" v-model="product.name">
@@ -22,7 +23,7 @@
                 </div>
                 <div>
                     <label for="price">Price</label> 
-                    <input type="text" id="price" v-model="product.price">
+                    <input type="number" min="0" id="price" v-model="product.price">
                 </div>
             </div>
             <label for="del">Delivery fee</label>
@@ -35,7 +36,8 @@
              </select>
             <div class="input-box">
                  <button @click="$router.push('/shops/myShop')">CANCEL</button>
-                 <button @click="addProduct()">ADD AND PROCEED</button>
+                 <img v-if="loading" src="https://s2.svgbox.net/loaders.svg?ic=tail-spin" height="30" width="30" alt="updating">
+                 <button v-if="!loading"  @click="addProduct()">ADD AND PROCEED</button>
             </div>
         </div>
      </div>
@@ -47,11 +49,13 @@ export default {
      data(){
        return{
            error:'',
+           loading:false,
+           fieldsVerified:false,
            product:{
                name:'',
                delivery:100,
                price:'',
-               displayPicture:'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTSYwGRJNe1c9WCBU2aOwYqPwLf2uI0E8hD-Q&usqp=CAU',
+               displayPicture:'',
                country:'',
                description:'',
                qty:1
@@ -67,33 +71,54 @@ export default {
            })
      },
      methods:{
+         verifyProductField(){
+             const fields=['name','delivery','price','displayPicture','country','description','qty'];
+             for(let i=0;i<fields.length;i++){
+                 if(this.product[fields[i]]===''){
+                     this.error=`Please fill your ${fields[i]}`;
+                     return;
+                 }
+             }
+             this.error='';
+             this.fieldsVerified=true;
+         },
          addProduct(){
-             this.$http.put(`http://localhost/shops/${this.$route.params.id}`,this.product)
-             .then(res=>{
-                 console.log(res.data);
-          this.product={
-               name:'',
-               price:'',
-               displayPicture:'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTSYwGRJNe1c9WCBU2aOwYqPwLf2uI0E8hD-Q&usqp=CAU',
-               country:'',
-               description:'',
-               qty:1
-          }
-             });
+              this.verifyProductField();
+              if(this.fieldsVerified){
+                     this.loading=true;
+                     this.$http.put(`http://localhost:3000/shops/${this.$route.params.id}`,this.product)
+                    .then(res=>{ 
+                    this.loading=false;       
+                    this.product={
+                        name:'',
+                        price:'',
+                        displayPicture:'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTSYwGRJNe1c9WCBU2aOwYqPwLf2uI0E8hD-Q&usqp=CAU',
+                        country:'',
+                        description:'',
+                        qty:1
+                    }
+                    if(!res.data.approved){
+                        console.log('her');
+                        this.$router.push('/payment');
+                    }
+              });
+              }
          },
          uploadProductImage(e){
             const image = e.target.files[0];
             if(image.size<150000){
                 const formData = new FormData();
                 formData.append('file', image);
-                formData.append('upload_preset', this.CLOUDINARY_UPLOAD_PRESET);
-                fetch(this.CLOUDINARY_URL, {
+                formData.append('upload_preset', 'qv83yxtp');
+                fetch('https://api.cloudinary.com/v1_1/dmigpnpar/image/upload', {
                 method: 'POST',
                 body: formData,
                 })
                 .then(response => response.json())
                 .then((data) => {
+                 console.log(data.secure_url);   
                  this.product.displayPicture=data.secure_url;
+                 this.error="Pic set";
                 })
                 .catch(err => console.error(err));
             }else{
@@ -137,12 +162,19 @@ export default {
         align-items: center;
         background-size: 100% 100%;
         background-position: center;
+        position: relative;
     }
     label.file input{
         display: none;
     }
     label.file img{
         margin-bottom: 10px;
+    }
+    img#bg{
+        display: block;
+        position: absolute;
+        width: 100%;
+        height: 100%;
     }
     label{
         margin-bottom: 10px;

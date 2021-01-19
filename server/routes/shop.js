@@ -1,15 +1,21 @@
-var express=require('express');
-var router=express.Router();
+const express=require('express');
+const router=express.Router();
 const Shop=require('../models/shop');
 const Product = require('../models/product');
 const Auth=require('../middleware/authware');
 
 router.get('/myShop',Auth.isLoggedIn,(req,res)=>{
-    Shop.findOne({owner:req.user._id})
-    .populate({
-        path:'products',
-        model:Product
-    })
+     Shop.findOne({owner:req.user._id})
+     .populate([
+         {
+           path:'product',
+           model:'Product'
+         },
+         {
+           path:'owner',
+           model:'User'
+         }
+     ])
     .exec(function(err,foundShop){
         if(err){
             return res.send('error');
@@ -19,8 +25,19 @@ router.get('/myShop',Auth.isLoggedIn,(req,res)=>{
     })
 });
 
-router.put('/:shopID',Auth.isLoggedIn,Auth.isItYours(Shop,'shopID'),(req,res)=>{
-    Shop.findById(req.params.shopID,function(err,foundShop){
+router.put('/:shopID',Auth.isLoggedIn,Auth.isItYours(Shop,'shopID'),Auth.areYouApproved,(req,res)=>{
+    Shop.findById(req.params.shopID)
+    .populate([
+        {
+          path:'product',
+          model:'Product'
+        },
+        {
+          path:'owner',
+          model:'User'
+        }
+    ])
+    .exec(function(err,foundShop){
         if(err){
             res.send('error');
         }else{
@@ -37,6 +54,28 @@ router.put('/:shopID',Auth.isLoggedIn,Auth.isItYours(Shop,'shopID'),(req,res)=>{
     })
 })
 
+router.put('/:shopID/approve',Auth.isLoggedIn,Auth.isItYours(Shop,'shopID'),(req,res)=>{
+    Shop.findById(req.params.shopID)
+    .populate([
+        {
+          path:'product',
+          model:'Product'
+        },
+        {
+          path:'owner',
+          model:'User'
+        }
+    ])
+    .exec(function(err,foundShop){
+        if(err){
+            return res.send('err');
+        }else{
+            foundShop.isApproved=true;
+            foundShop.save();
+            res.json(foundShop);
+        }
+    })
+})
 
 
 module.exports=router;

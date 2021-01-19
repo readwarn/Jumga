@@ -7,7 +7,8 @@
              <input type="text" name="username" id="username" v-model="user.username">
              <label for="pass">Password</label>
              <input type="text" name="pass" id="pass" v-model="user.password">
-             <button @click="login(user)">LOGIN</button>
+             <img v-if="loading" src="https://s2.svgbox.net/loaders.svg?ic=tail-spin" height="30" width="30" alt="updating">
+             <button v-if="!loading" @click="login(user)">LOGIN</button>
              <p id="huh">Don't have an account? <router-link :to="registerRoute">Register</router-link></p>
          </div>
    </div>
@@ -19,6 +20,7 @@ export default {
       data(){
           return{
               error:'',
+              loading:false,
               registerRoute:'/register/buyer',
               user:{
                   username:'',
@@ -28,25 +30,32 @@ export default {
       },
       methods:{
           login(user){
-              this.$http.post(`http://localhost:3000/auth/${this.$route.params.id}/login`,user)
-              .then(res=>{
-                  if(res.data.loggedIn){
-                      if(this.$route.params.id==='seller'){
-                           this.$router.push('/shops/myShop');
-                      }else{
-                           this.$router.push('/markets');
-                      }
-                  }else{
-                      console.log('err');
-                  }
-              })
-              .catch(err=>{
-                  console.log(err.message);
-              })
+              if(this.user.username==='' || this.user.password===''){
+                   this.error='Fill all details'
+              }else{
+                     this.loading=true;
+                     this.$http.post(`http://localhost:3000/auth/${this.$route.params.id}/login`,user)
+                    .then(res=>{
+                        this.loading=false;
+                        if(res.data.loggedIn){
+                            if(this.$route.params.id==='seller'){
+                                this.$router.push('/shops/myShop');
+                            }else{
+                                this.$router.push('/markets');
+                            }
+                        }else{
+                            this.error=res.data.message;
+                            console.log('err');
+                        }
+                    })
+                    .catch(err=>{
+                        console.log(err.message);
+                    })
+              }
           }
       },
       created(){
-           this.registerRoute=`/register/${this.$route.params.id}`
+           this.registerRoute=`/${this.$route.params.id}/register`;
       }
 }
 </script>

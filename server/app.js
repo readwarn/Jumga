@@ -17,8 +17,13 @@ mongoose.connect(process.env.MONGODB_URI,{useNewUrlParser:true, useUnifiedTopolo
 mongoose.connection.on('connected', function(){
   console.log('connected');
 });
-mongoose.connection.on('error', function(){
-  console.log('error connercting To mongoDB');
+mongoose.connection.on('error', function(){console.log('eror')})
+.then(() => {
+   console.log('connected to db')
+})
+.catch(err => { 
+  console.error('App starting error:', err.stack);
+  process.exit(1);
 });
 app.use(bodyParser.json());
 app.set('trust proxy', 1)

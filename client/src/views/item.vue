@@ -6,59 +6,78 @@
          <loader v-if="loading" />
          <div class="content"  v-if="!loading">
                <p class="error">{{error}}</p>
-              <div class="product-container">
-                      <img src="../assets/product.svg" alt="product">
+               <div class="product-container">
+                      <img :src="item.product.displayPicture" alt="product">
                       <div class="details">
-                          <h4>The all-time lavendar perfume 200oz</h4>
-                          <p class="price">₦3000</p>
-                          <p>Delivery fee ₦1000</p>
-                          <label for="qty">Units</label>
-                          <input type="number" min="1" name="qty" id="qty" v-model="units">
+                          <h4>{{item.product.name}}</h4>
+                          <p class="price">₦{{item.product.price}}</p>
+                          <p>Delivery fee ₦{{item.product.delivery}}</p>
+                          <label id="mb" for="qty">Units</label>
+                          <update-item-button v-on:minusclick="decreaseItem()" :disable="updating" v-on:plusclick="increaseItem()" />
+                          <input type="number" min="1" name="qty" id="qty" :max="item.product.qty" v-model="units">
                           <label for="address">Address</label>
-                          <textarea id="address" cols="30" rows="6"></textarea>
+                          <textarea id="address" cols="30" rows="6" v-model="address"></textarea>
                           <div class="input-box">
-                              <button @click="updateCart()">ADD TO CART</button>
-                              <button>BUY NOW</button>
+                              <img v-if="carting" id="load" src="https://s2.svgbox.net/loaders.svg?ic=tail-spin" height="30" width="30" alt="updating">
+                              <button @click="updateCart()" v-if="!carting">ADD TO CART</button>
+                              <img v-if="buying" id="load" src="https://s2.svgbox.net/loaders.svg?ic=tail-spin" height="30" width="30" alt="updating">
+                              <button v-if="!buying" @click="buynow()">BUY NOW</button>
                           </div>
-                          <p>Sellers shop <span id="seller">Elledennie fragrances</span></p>
+                          <p>Sold by <span id="seller">{{item.product.shop.name}}</span></p>
                       </div>
             </div>
             <p class="title">Product Description</p>
-            <p> Perfumery, as the art of making perfumes, 
-                began in ancient Mesopotamia, Egypt, the Indus Valley Civilization and possibly 
-                Ancient China. It was further refined by the Romans and the Arabs. ... 
-                On the Indian subcontinent, perfume and perfumery existed in the Indus civilization (3300 BC – 1300 BC). 
-                The word perfume is used today to describe scented mixtures and is derived from the Latin word, "per fumus," meaning through smoke. 
-                The word Perfumery refers to the art of making perfumes. Perfume was further refined by the Romans, the Persians and the Arabs.
-           </p>
+            <p>{{item.product.description}}</p>
          </div>
      </div>
 </template>
 
 <script>
 import loader from '../components/loader.vue';
+import UpdateItemButton from '../components/updateItemButton.vue';
 export default {
-  components: { loader },
+  components: { loader, UpdateItemButton },
     name:"Item",
     data(){
         return{
-            cart:'',
+            item:'',
             loading:true,
             units:1,
-            product:'',
+            address:'Ibadan',
+            updating:false,
+            carting:false,
+            buying:false,
             error:''
         }
     },
     methods:{
+        increaseItem(){
+            this.updateItem();
+            this.units+=1;
+        },
+        decreaseItem(){
+            this.updateItem();
+            this.units-=1;
+        },
+        updateItem(){
+             if(this.units>this.item.product.qty){
+                this.error='Not enough product from seller';
+             }else{
+                  this.updating=true;
+                  this.$http.put(`http://localhost:3000/items/${this.item._id}`,{quantity:this.units})
+                .then(res=>{
+                    this.updating=false;
+                    this.item=res.data;
+                })
+             }
+        },
         updateCart(){
-              const item={
-                  product:this.$route.params.id,
-                  quantity:this.units
-              }
-              this.$http.put(`http://localhost:3000/carts/${this.cart._id}`,item)
+               this.carting=true;
+               this.$http.put(`http://localhost:3000/carts/${this.cart._id}`,this.item)
               .then(res=>{
                   console.log(res.data);
-                  this.$router.push(`/markets/${this.$route.params.cc}`); 
+                  this.carting=false;
+                  this.$router.push(`/cart/${this.item.product.country}`); 
               })
         },
         buynow(){
@@ -66,7 +85,7 @@ export default {
                  this.error='Fill the address';
                 
             }else{
-                  const cost =(this.product.price * this.units) + this.product.delivery;
+                  const cost =(this.item.product.price * this.units) + this.product.delivery;
             const pay={
                 amount:cost,
                 country:this.$route.params.cc,
@@ -83,8 +102,10 @@ export default {
                     }
                 ]
             }
+            this.buying=true;
             this.$http.post('http://localhost:3000/flutter/pay',pay)
             .then(res=>{
+                this.buying=false;
                 console.log(res.data);
             })
             }
@@ -93,18 +114,13 @@ export default {
     created(){
             this.$http.get('http://localhost:3000/auth/status')
            .then(res=>{
-               if(!res.data.loggedIn){
+               if(res.data.loggedIn){
                  this.$router.push('/buyer/login');
-               }else{
-                    this.$http.get(`http://localhost:3000/carts/${this.$route.params.cc}myCart`)
-                   .then(res=>{
-                       this.loading=false;
-                       this.cart=res.data;
-                   })
-                   this.$http.get(`http://localhost:3000/products/${this.$route.params.id}`)
-                   .then(res=>{
-                       this.product=res.data;
-                   })
+               }else{ 
+                  this.$http.get(`http://localhost:3000/items/product/${this.$route.params.id}`)
+                  .then(res=>{
+                      this.item=res.data;
+                  })
                }
            })
     }
@@ -112,6 +128,10 @@ export default {
 </script>
 
 <style scoped>
+img#load{
+    display: block;
+    margin: auto;
+}
 div.item-container{
     height: 100%;
 }
@@ -135,6 +155,15 @@ p{
     line-height: 150%;
     font-weight: 500;
     font-size: 0.8rem;
+}
+p#mb{
+    margin-bottom: 15px;
+}
+label#mb{
+    margin-bottom: 5px;
+}
+input#qty{
+    margin-top: 5px;
 }
 div.content{
     width: 70%;
@@ -174,7 +203,7 @@ p.price{
     color: #219653;
     font-weight: 700;
     font-size: 1.1rem;
-    margin-bottom: 15px;
+    margin-bottom: 1px;
 }
 p.title{
     font-size: 1rem;
