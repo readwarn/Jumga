@@ -57,5 +57,5 @@ app.use('/shops', shop);
 
 
 app.listen(3000,function(){
-    console.log('server running on port 3000')
-})
+    console.log('server running on port 3000');
+});

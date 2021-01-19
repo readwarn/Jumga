@@ -3,7 +3,7 @@ const router=express.Router();
 const axios = require('axios');
 const Payment = require('../models/payment');
 axios.defaults.withCredentials = true;
-axios.defaults.headers.common['Authorization'] = `Bearer FLWSECK-dc89177da0b292ff069cf0011a74ada3-X`
+axios.defaults.headers.common['Authorization'] = process.env.SECRET_KEY_LIVE;
 
 router.get('/banks/:code',(req,res)=>{
     axios.get(`https://api.flutterwave.com/v3/banks/${req.params.code}`)
