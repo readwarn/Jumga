@@ -233,9 +233,10 @@ export default {
              this.seller.country=this.cc;
              this.$http.post(`http://localhost:3000/auth/${this.$route.params.id}/register`,this.seller)
             .then(res=>{
-                if(!res.data.logged){
+                if(!res.data.loggedIn){
                     this.error=res.data.message;
                  }else{
+                     console.log('logged in here');
                     if(this.$route.params.id==='seller'){
                           this.$router.push('/shops/myShop');
                     }else{

@@ -42,9 +42,9 @@ router.get('/:cc/myCart',Auth.isLoggedIn,(req,res)=>{
     ])
     .exec(function(err,foundCart){
       if(err){
-          res.send('err')
+          res.send('err');
       }else{
-          res.json(foundCart)
+          res.json(foundCart);
       }
     })
 })

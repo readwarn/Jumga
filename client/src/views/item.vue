@@ -1,8 +1,6 @@
 <template>
      <div class="item-container">
-         <nav>
-             <h3>Jumga</h3>
-         </nav>
+         <navbar :cc="$route.params.cc" />
          <loader v-if="loading" />
          <div class="content"  v-if="!loading">
                <p class="error">{{error}}</p>
@@ -34,9 +32,10 @@
 
 <script>
 import loader from '../components/loader.vue';
+import Navbar from '../components/navbar.vue';
 import UpdateItemButton from '../components/updateItemButton.vue';
 export default {
-  components: { loader, UpdateItemButton },
+  components: { loader, UpdateItemButton, Navbar },
     name:"Item",
     data(){
         return{

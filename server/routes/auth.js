@@ -27,6 +27,7 @@ router.post('/:seller/register', function (req,res,next){
                   newCart.owner=newUser._id;
                   newCart.country=req.body.country;
                   newCart.save();
+                  newUser.save();
                 }
                 if(newUser.isSeller){
                     Shop.create({

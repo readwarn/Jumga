@@ -1,10 +1,11 @@
 <template>
     <div class="order-box">
-            <nav><h3>Jumga</h3></nav>
+            <navbar :cc="$route.params.id" :route="route" />
             <loader v-if="loading" />
             <div class="content" v-if="!loading">
                 <div class="address-popup" v-if="showAddress">
                         <div> 
+                            <p v-if="address!==''">Your Order costs {{(total + delivery)}} and will be shipped to {{address}}</p>
                             <h4>{{(total + delivery)}}</h4>
                             <label for="address">Address</label>
                             <textarea name="add" id="address" cols="30" v-model="address" rows="10"></textarea>
@@ -35,7 +36,7 @@
                         <img :src="item.product.displayPicture" class="avi" alt="product">
                         <div class="detail">
                             <p>Seller: {{item.shop.name}}</p>
-                            <router-link to="/">{{item.product.name}}</router-link>
+                            <router-link :to="itemRoute(item)">{{item.product.name}}</router-link>
                             <img id="load" v-if="deleting" src="https://s2.svgbox.net/loaders.svg?ic=tail-spin" height="30" width="30" alt="updating">
                             <div class="delete" v-if="!deleting" @click="deleteItem(item)">
                                 <img src="https://s2.svgbox.net/hero-outline.svg?color=red&ic=x" height="20" width="20" alt="delete">
@@ -63,13 +64,22 @@
                         </div>
                     </div>
                 </div>
-                <div class="total">
+                <div class="total" v-if="!empty">
                     <p>Total</p>
-                    <h4>₦1,000</h4>
+                    <h4>{{total}}</h4>
                 </div>
-                <div class="total">
-                      <button @click="$router.push(`/markets/${this.$route.params.id}`)">CONTINUE SHOPPING</button>
-                      <button @click="showAddress=true">CHECKOUT</button>
+                <div class="total" v-if="!empty">
+                         <router-link :to="route">
+                             <button class="a">CONTINUE SHOPPING</button>
+                         </router-link>
+                         <button class="2" @click="showAddress=true">CHECKOUT</button>
+                </div>
+                <div class="emptyCart" v-if="empty">
+                    <img src="../assets/empty.svg" alt="cart">
+                     <h3>Empty Cart</h3>
+                     <router-link :to="route">
+                         <button>CONTINUE SHOPPING</button>
+                     </router-link>
                 </div>
 
             </div>
@@ -78,12 +88,15 @@
 
 <script>
 import loader from '../components/loader.vue'
+import navbar from '../components/navbar.vue';
 import UpdateItemButton from '../components/updateItemButton.vue';
 export default {
     name:"Order",
-    components:{loader, UpdateItemButton},
+    components:{loader, UpdateItemButton, navbar},
     data(){
         return{
+            route:'/markets/NG',
+            empty:false,
             loading:true,
             updating:false,
             showAddress:false,
@@ -92,11 +105,14 @@ export default {
             units:1,
             updating:false,
             cart:'',
-            total:1,
+            total:0,
             delivery:2,
         }
     },
     methods:{
+         itemRoute(item){
+              return `/market/${this.$route.params.id}/products/${item.product._id}`
+         },
          decreaseItem(item,index){
              this.units-=1;
              this.updateItem(item,index);
@@ -170,6 +186,7 @@ export default {
         },
     },
     created(){
+         this.route=`/markets/${this.$route.params.id}`;
          this.$http.get('http://localhost:3000/auth/status')
            .then(res=>{
                if(!res.data.loggedIn){
@@ -177,14 +194,19 @@ export default {
                }else{
                    this.$http.get(`http://localhost:3000/carts/${this.$route.params.id}/myCart`)
                   .then(res=>{
-                      this.loading=false;
-                      this.cart=res.data;
-                  });
-                  this.cart.items.forEach(item => {
-                       this.total+=(item.product.price * item.quantity);
-                       this.delivery+=(item.product.delivery);
-                  });
-               }
+                       this.loading=false;
+                       this.cart=res.data;
+                       console.log(this.cart);
+                       if(this.cart.items.length===0){
+                           this.empty=true;
+                       }else{
+                            this.cart.items.forEach(item => {
+                            this.total+=(item.product.price * item.quantity);
+                            this.delivery+=(item.product.delivery);
+                       });
+                       }
+                });
+            }
         })
     }
 
@@ -214,6 +236,7 @@ div.content{
     width: 70%;
     margin: auto;
     margin-top: 80px;
+    position: relative;
 }
 div.item{
     display: flex;
@@ -327,11 +350,12 @@ div.total button{
 div.total button:hover{
    box-shadow: 0px 1px 2px 0px rgba(102,96,102,1);
 }
-div.total button:nth-child(1){
+div.total button.a{
     background: #66C9FF;
     margin-right: 15px;
 }
-div.total button:nth-child(2){
+
+div.total button.b{
     background: #219653;
 }
 div.total p{
@@ -383,6 +407,21 @@ div.address-popup div button{
 div.address-popup div button:hover{
     box-shadow: 0px 1px 2px 0px rgba(102,96,102,1);
 }
+div.empty{
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    color: #66C9FF;
+    font-size: 1.5rem;
+}
+div.empty img{
+    height: 40%;
+    width: 45%;
+    display: block;
+    margin: auto;
+}
 @media only screen and (max-width: 720px) {
 nav{
     padding: 10px 15px;
@@ -424,6 +463,12 @@ div.address-popup div{
 }
 div.address-popup div h4{
     font-size: 1.4rem;
+}
+div.empty{
+    font-size: 1.1rem;
+}
+div.empty img{
+    width: 75%;
 }
 }
 

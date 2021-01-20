@@ -13,18 +13,7 @@ const shop=require('./routes/shop');
 const flutter=require('./routes/flutter');
 const product=require('./routes/product');
 const app = express();
-mongoose.connect(process.env.MONGODB_URI,{useNewUrlParser:true, useUnifiedTopology:true, useFindAndModify: false});
-mongoose.connection.on('connected', function(){
-  console.log('connected to db');
-});
-mongoose.connection.on('error', function(){console.log('eror')})
-.then(() => {
-   
-})
-.catch(err => { 
-  console.error('App starting error:', err.stack);
-  process.exit(1);
-});
+
 app.use(bodyParser.json());
 app.set('trust proxy', 1)
 app.use(require('express-session')({
@@ -62,5 +51,18 @@ app.use('/shops', shop);
 
 
 app.listen(3000,function(){
-    console.log('server running on port 3000');
+      console.log('server running');
+});
+
+mongoose.connect(process.env.MONGODB_URI,{useNewUrlParser:true, useUnifiedTopology:true, useFindAndModify: false});
+mongoose.connection.on('connected', function(){
+  console.log('connected to db');
+});
+mongoose.connection.on('error', function(){console.log('eror')})
+.then(() => {
+   
+})
+.catch(err => { 
+  console.log('App starting error:', err.stack);
+  process.exit(1);
 });

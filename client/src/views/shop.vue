@@ -32,7 +32,7 @@
            <div class="right">
                 <div class="balance">
                         <p>Balance</p>
-                        <p>₦150,000.00</p>
+                        <p>₦{{shop.balance}}</p>
                 </div>
                 <button @click="$router.push(addProductRoute)">ADD PRODUCT</button>
            </div>
@@ -112,8 +112,8 @@ export default {
 
 <style scoped>
 div.dashboard-container{
-    height: 100%;
     background: #ffffff;
+    border: transparent 1px solid;
 }
 nav{
     padding: 10px 50px;
@@ -131,11 +131,12 @@ h3{
     line-height: 130%;
 }
 div.content{
-    width: 90%;
+    width: 60%;
     margin: auto;
     padding: 20px 30px;
-    margin-top: 60px;
+    margin-top: 70px;
     position: relative;
+    background: #E5E5E5;
 }
 div.banner{
     display: flex;
@@ -153,7 +154,7 @@ h2.title{
     font-weight: 700;
     color: #005B94;
     line-height: 125%;
-    margin-bottom: 15px;
+    margin-bottom: 0px;
 }
 p.subtitle{
     margin-bottom: 13px;
@@ -164,6 +165,7 @@ p.subtitle, div.phone p{
 div.phone{
     display: flex;
     align-items: center;
+    margin: 15px 0px;
 }
 div.phone img{
     margin-right: 10px;
@@ -177,7 +179,7 @@ div.balance{
     background: #E5E5E5;
     border-radius: 10px;
     padding: 15px;
-    margin-bottom: 10px;
+    margin-bottom: 0px;
 }
 div.balance p:nth-child(2){
      font-size: 1.5rem;
@@ -187,7 +189,7 @@ div.balance p:nth-child(2){
 div.balance p:nth-child(1){
      font-size: 1rem;
      color: #00253C;
-     margin-bottom: 13px;
+     margin-bottom: 3px;
 }
 div.product-container{
     display: flex;
@@ -236,8 +238,8 @@ div.product button{
             margin-bottom: 10px;
         }
         div.content{
-            width: 98%;
-            padding: 20px 2px;
+            width: 90%;
+            padding: 5px 10px;
         }
         div.detail{
             width: 100%;
@@ -251,19 +253,14 @@ div.product button{
         }
         h2.title{
             font-size: 2rem;
-            text-align: center;
         }
         p.subtitle{
-            width: 90%;
-            margin: auto;
             font-size: 0.85rem;
             line-height: 140%;
-            text-align: center;
             margin-bottom: 15px;
         }
         div.phone{
             width: 40%;
-            margin: auto;
         }
         div.phone p{
             font-size: 0.85rem;

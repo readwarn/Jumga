@@ -1,10 +1,6 @@
 <template>
      <div class="market-container">
-          <nav>
-              <h3>
-                  Jumga
-              </h3>
-          </nav>
+          <navbar :cc="$route.params.id" route="/markets/NG" />
           <loader v-if="loading" />
           <div class="banner">
                 <h3>AMAZING DEALS THIS FRIDAY</h3>
@@ -16,7 +12,9 @@
                     <input type="text" id="search">
                 </div>
                 <div class="product-container">
-                     <product v-for="(product,index) in products" :key="index" :name="product.name" :price="product.price" v-on:productclick="$router.push(`/market/${this.params.id}/products/${product._id}`)"/>
+                      <router-link v-for="(product,index) in products" :key="index" :to="itemRoute(product._id)">
+                           <product :price="product.price" :qty="product.qty" :name="product.name" />
+                      </router-link>
                 </div>
           </div>
      </div> 
@@ -25,10 +23,11 @@
 <script>
 import product from "@/components/product.vue";
 import loader from '../components/loader.vue';
+import Navbar from '../components/navbar.vue';
 export default {
      name:'Market',
      components:{
-        product,loader
+        product,loader,Navbar
      },
      data(){
          return{
@@ -36,9 +35,14 @@ export default {
               products:[1,3,4,5,5,5,5,5,5]
          }
      },
+     methods:{
+          itemRoute(id){
+              return `/market/${this.$route.params.id}/products/${id}`;
+          } 
+     },
      created(){
-           this.$http.get('http://localhost:3000/auth/status')
-           .then(res=>{
+             this.$http.get('http://localhost:3000/auth/status')
+            .then(res=>{
                if(!res.data.loggedIn){
                  this.$router.push('/buyer/login');
                }else{

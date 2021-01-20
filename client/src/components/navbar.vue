@@ -1,10 +1,12 @@
 <template>
 <div @click.self="profile=false">
-   <nav>
-        <div class="brand" @click="$router.push(`/markets/${cc}`)">
-           <h3>Jumga</h3>
-           <img src="https://s2.svgbox.net/hero-outline.svg?color=219653&ic=shopping-bag" height="30" width="30" alt="brand">
-        </div>
+   <nav> 
+        <router-link :to="route"> 
+            <div class="brand">
+                <h3>Jumga</h3>
+                <img src="https://s2.svgbox.net/hero-outline.svg?color=219653&ic=shopping-bag" height="30" width="30" alt="brand">
+            </div>
+        </router-link>
         <div class="info">
              <div class="user" @click="showProfile()">
                    <img src="https://s2.svgbox.net/hero-outline.svg?color=005B94&ic=user" height="25" width="25" alt="right">
@@ -15,7 +17,7 @@
                 <router-link :to="cartLink">My Order</router-link>
                 <button @click="logout()">LOG OUT</button>
             </div>
-             <router-link to="/">
+             <router-link :to="cartLink">
                  <div class="cart">
                         <img src="https://s2.svgbox.net/hero-outline.svg?color=005B94&ic=shopping-cart" width="35" height="35" alt="cart">
                         <div>
@@ -32,7 +34,7 @@
 <script>
 export default {
     name:"Navbar",
-    props:['cc'],
+    props:['cc','route'],
     data(){
         return{
             rotate:false,
@@ -51,6 +53,9 @@ export default {
         this.cartLink=`/cart/${this.cc}`
     },
     methods:{
+        goto(){
+            
+        },
         showProfile(){
             this.profile=!this.profile;
             this.rotate=!this.rotate;

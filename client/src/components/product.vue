@@ -1,14 +1,14 @@
 <template>
-    <div class="product-card" @click="$emit('productclick')">
-          <div class="product-image">
-               <img src="../assets/product.svg" alt="">
-          </div>
-          <div class="details">
-              <p>{{name}}</p>
-              <p>₦{{price}}</p>
-              <p v-if="qty">X{{qty}}</p>
-          </div>
-    </div>
+     <div class="product-card">
+            <div class="product-image">
+                <img src="../assets/product.svg" alt="">
+            </div>
+            <div class="details">
+                <p>{{name}}</p>
+                <p>₦{{price}}</p>
+                <p v-if="qty">X{{qty}}</p>
+            </div>
+       </div>
 </template>
 
 <script>

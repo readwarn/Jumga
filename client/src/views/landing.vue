@@ -1,6 +1,6 @@
 <template>
     <div class="land">
-        <navbar cc='NG' />
+        <nav><h3>Jumga</h3></nav>
         <div class="content">
               <section>
                 <div class="banner">
@@ -74,9 +74,7 @@
 </template>
 
 <script>
-import navbar from '../components/navbar.vue'
 export default {
-  components: { navbar },
     name:"Land"
 }
 </script>
@@ -86,14 +84,13 @@ div.land{
     height: 100%;
 }
 nav{
+    background: #ffffff;
     padding: 10px 50px;
-    margin-bottom: 10px;
     box-shadow: 0px 1px 2px 0px rgba(102,96,102,1);
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
-    background: #ffffff;
 }
 h3{
     color: #005B94;
