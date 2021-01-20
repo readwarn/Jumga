@@ -30,17 +30,20 @@
                </div>
            </div>
            <div class="details" v-if="userDetail">
-                <label for="country">Country</label>
-                <select  id="country" v-model="cc">
-                    <option value="NG">Nigeria</option>
-                    <option value="GH">Kenya</option>
-                    <option value="KE">Ghana</option>
-                </select>
                 <label for="username">Username</label>
                 <input type="text" id="username" v-model="seller.username">
                 <label for="password">Password</label>
                 <input type="text" id="password" v-model="seller.password">
-                <button v-if="$route.params.id==='buyer'" @click="signUp()">SIGN UP</button>
+                <label for="username">Email</label>
+                <input type="email" id="email" v-model="seller.email">
+                <label for="country">Country</label>
+                <select  id="country" v-model="seller.country">
+                    <option value="NG">Nigeria</option>
+                    <option value="GH">Kenya</option>
+                    <option value="KE">Ghana</option>
+                </select>
+                <img v-if="logging" src="https://s2.svgbox.net/loaders.svg?color=66C9FF&ic=spinner" alt="loader" width="32" height="32">
+                <button v-if="$route.params.id==='buyer' && !logging" @click="signUp()">SIGN UP</button>
                 <button @click="showDetail('store')" v-if="$route.params.id==='seller'">Next</button>
                 <p id="huh">Already have an account? <router-link :to="loginRoute">Login</router-link></p>
            </div>
@@ -62,6 +65,14 @@
                        <p>Verifying bank</p>
                        <img src="https://s2.svgbox.net/loaders.svg?ic=three-dots" alt="loader" width="32" height="32">
                 </div>
+                 <div class="loader bank" v-if="bankLoading">
+                       <p>Loading bank</p>
+                       <img src="https://s2.svgbox.net/loaders.svg?ic=three-dots" alt="loader" width="32" height="32">
+                </div>
+                <div class="loader bank" v-if="creating">
+                       <p>Creating account id</p>
+                       <img src="https://s2.svgbox.net/loaders.svg?ic=three-dots" alt="loader" width="32" height="32">
+                </div>
                 <label for="account">Account Number</label>
                 <input type="text" id="account" v-model="accountNumber">
                 <label for="country">Country</label>
@@ -70,21 +81,16 @@
                     <option value="GH">Ghana</option>
                     <option value="KE">Kenya</option>
                 </select>
-                <div class="loader" v-if="bankLoading">
-                      <img src="https://s2.svgbox.net/loaders.svg?color=66C9FF&ic=spinner" alt="loader" width="32" height="32">
-                </div>
-                
-                <label for="bank" v-if="!bankLoading">Bank</label>
-                <select id="bank" v-model="userBankCode" v-if="!bankLoading">
+                <label for="bank" >Bank</label>
+                <select id="bank" v-model="userBankCode">
                     <option v-for="(bank,index) in banks" :key="index" :value="bank.code">
                          {{bank.name}}
                     </option>
-                    <option v-if="loading" value="">Refresh Page to get banks</option>
                 </select>
-                <button @click="verifyDetails()" :disabled="verifying">Verify Account</button>
-                <button :disabled="!bankVerified" @click="signUp()">Sign Up</button>
+                <button id="ve" @click="verifyDetails()" :disabled="verifying">Verify Account</button>
+                <img v-if="logging" src="https://s2.svgbox.net/loaders.svg?color=66C9FF&ic=spinner" alt="loader" width="32" height="32">
+                <button :disabled="!bankVerified && !creating" @click="signUp()">Sign Up</button>
            </div>
-           
    </div>
 </template>
 
@@ -97,6 +103,7 @@ export default {
                  username:'',
                  password:'',
                  shopname:'',
+                 email:'yusufmosobalaje@gmail.com',
                  shopDescription:'',
                  country:'',
                  phone:'',
@@ -108,16 +115,18 @@ export default {
               accountDetail:false,
               userDetail:true,
               storeDetail:false,
-              bankLoading:false,
+              bankLoading:true,
               fieldsVerified:false,
               bankVerified:false,
               detailsVerified:false,
               verifying:false,
+              creating:false,
+              logging:false,
               cc:'NG',
               country:'NG',
               accountNumber:'',
               banks:[{
-                  name:'Refresh page to load banks',
+                  name:'Reselect Country',
                   code:'234'
               }],
               error:'',
@@ -150,22 +159,26 @@ export default {
              })
          },
          createsubaccount(){
+              this.creating=true;
               const sub = {
                         account_bank: this.userBankCode,
                         account_number: this.accountNumber,
-                        business_name: this.shopname,
-                        business_mobile:this.phone,
+                        business_name: this.seller.shopname,
+                        business_mobile:this.seller.phone,
+                        business_email:this.seller.email,
                         country:this.country,
-                        split_value: 1
+                        split_value: 0.975
                }
+               console.log(sub);
                this.error='';
                this.$http.post('http://localhost:3000/flutter/subaccounts',sub)
               .then(res=>{
+                  this.creating=false;
                   if(res.data.status==='success'){
                        this.shopID=res.data.data.subaccount_id;
                        this.detailsVerified=true;
                   }else{
-                      console.log(res.data);
+                      this.error=res.data.message;
                   }
               })
               .catch(err=>{
@@ -191,14 +204,16 @@ export default {
              this.$http.post('http://localhost:3000/flutter/accounts/verify',bank)
              .then(res=>{
                    this.verifying=false;
-                   if(res.data.status==='success'){
-                       console.log('bank details');
-                       this.error='';
-                       this.accountName=`Account Name: ${res.data.data.account_name}`;
-                       this.bankVerified=true;
+                   if(res.data.message){
+                       if(res.status="success"){
+                            this.error='';
+                            this.accountName=`Account Name: ${res.data.data.account_name}`;
+                            this.bankVerified=true;
+                       }else{
+                           this.error=res.data.message;
+                       }
                    }else{
-                       console.log('incorect bank details');
-                       this.error="Invalid Account details";
+                       this.error="Error occured! Try again";
                    }
              })
              .catch(err=>{
@@ -206,7 +221,7 @@ export default {
              })
          },
          verifySellerField(){
-             const fields=['username','password','shopname','shopDescription','phone','address'];
+             const fields=['username','email','password','shopname','shopDescription','phone','address'];
              for(let i=0;i<fields.length;i++){
                  if(this.seller[fields[i]]===''){
                      if(fields[i]==='username' || fields[i]==='password'){
@@ -230,9 +245,16 @@ export default {
                }
          },
          signUp(){
+             this.verifySellerField();
+             if(this.fieldsVerified){
+                 this.createsubaccount();
+             }
+             if(this.detailsVerified){
+                     this.logging=true;
              this.seller.country=this.cc;
              this.$http.post(`http://localhost:3000/auth/${this.$route.params.id}/register`,this.seller)
             .then(res=>{
+                this.logging=false;
                 if(!res.data.loggedIn){
                     this.error=res.data.message;
                  }else{
@@ -248,12 +270,18 @@ export default {
                 console.log(err.message);
             })
          }
+             }
       },
       created(){
              this.loginRoute=`/${this.$route.params.id}/login`;
              this.$http.get(`http://localhost:3000/flutter/banks/NG`).then(res=>{
-                    this.banks=res.data.data;
-                    this.loading=false;
+                    if(res.data){
+                        this.banks=res.data.data;
+                        this.bankLoading=false;
+                        this.error='';
+                    }else{
+                       this.error="Select another country to load banks";
+                    }
              });
       }
 }
@@ -400,6 +428,9 @@ export default {
     button:disabled{
         filter: brightness(0.5);
         cursor: not-allowed;
+    }
+    button#ve{
+        margin-bottom: 10px;
     }
     @media only screen and (max-width: 720px) {
             div.steps{

@@ -19,7 +19,6 @@ router.get('/banks/:code',(req,res)=>{
 router.post('/accounts/verify',(req,res)=>{     
     axios.post('https://api.flutterwave.com/v3/accounts/resolve',req.body)
     .then(response=>{
-        console.log(response);
         res.json(response.data);
     })
     .catch(err=>{
@@ -28,12 +27,29 @@ router.post('/accounts/verify',(req,res)=>{
 })
 
 router.post('/subaccounts',(req,res)=>{
-    axios.post('https://api.flutterwave.com/v3/subaccounts',req.body)
+     axios.post('https://api.flutterwave.com/v3/subaccounts',req.body)
     .then(response=>{
-        res.send('OKEY');
-        return console.log(response);
+        if(!response  || !response.response){
+            res.json({
+                status:"error",
+                message:'Error Occured'
+            });
+        }else{
+            const resp=error.response.data;
+            res.json(resp);
+        }
     })
-    .catch((error) => console.log(error));
+    .catch((error) => {
+        if(!error || !error.response){
+            res.json({
+                status:"error",
+                message:'Error Occured'
+            });
+        }else{
+            const resp=error.response.data;
+            res.json(resp)
+        }
+    });
 })
 
 router.post('/pay',Auth.isLoggedIn,(req,res)=>{

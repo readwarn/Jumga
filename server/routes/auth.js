@@ -15,7 +15,8 @@ router.post('/:seller/register', function (req,res,next){
            User.create({
                 username:req.body.username,
                 password:req.body.password,
-                isSeller:req.params.seller==='seller'
+                isSeller:req.params.seller==='seller',
+                email:req.body.email
            },function(err,newUser){
              if(err){
                return res.send('error');
