@@ -1,6 +1,6 @@
 <template>
      <div class="market-container">
-          <navbar :cc="$route.params.id" route="/markets/NG" />
+          <navbar :cc="$route.params.id" />
           <loader v-if="loading" />
           <div class="banner">
                 <h3>AMAZING DEALS THIS FRIDAY</h3>
@@ -12,9 +12,7 @@
                     <input type="text" id="search">
                 </div>
                 <div class="product-container">
-                      <router-link v-for="(product,index) in products" :key="index" :to="itemRoute(product._id)">
-                           <product :price="product.price" :qty="product.qty" :name="product.name" />
-                      </router-link>
+                     <product v-for="(product,index) in products" :key="index" :avi="product.displayPicture" @productclick="createItem(product)"  :price="product.price" :qty="product.qty" :name="product.name" />
                 </div>
           </div>
      </div> 
@@ -32,13 +30,19 @@ export default {
      data(){
          return{
               loading:true,
+              itemRoute:'',
               products:[1,3,4,5,5,5,5,5,5]
          }
      },
      methods:{
-          itemRoute(id){
-              return `/market/${this.$route.params.id}/products/${id}`;
-          } 
+          createItem(product){
+                 this.$http.post(`http://localhost:3000/items/${product._id}`,{shop:product.shop})
+                .then(res=>{
+                    console.log(product.shop);
+                    this.itemRoute=`/market/${this.$route.params.id}/items/${res.data._id.toString()}`;
+                    this.$router.push(this.itemRoute);
+                })
+          },
      },
      created(){
              this.$http.get('http://localhost:3000/auth/status')

@@ -23,7 +23,10 @@ router.get('/:cc/myCart',Auth.isLoggedIn,(req,res)=>{
         populate:[
             {
                 path:'product',
-                model:'Product'
+                populate:{
+                    path:'shop',
+                    model:'Shop'
+                }
             },
             {
                 path:'owner',
@@ -36,8 +39,8 @@ router.get('/:cc/myCart',Auth.isLoggedIn,(req,res)=>{
         ]
         },
         {
-        path:'owner',
-        model:'User'
+        path:'shop',
+        model:'Shop'
         }
     ])
     .exec(function(err,foundCart){
@@ -49,8 +52,8 @@ router.get('/:cc/myCart',Auth.isLoggedIn,(req,res)=>{
     })
 })
 
-router.put('/:cartID',Auth.isLoggedIn, Auth.isItYours(Cart,'cartID'),(req,res)=>{
-    Cart.findById(req.params.cartID)
+router.put('/:cartID/:productID',Auth.isLoggedIn, Auth.isItYours(Cart,'cartID'),(req,res)=>{
+     Cart.findById(req.params.cartID)
     .populate([
         {
         path:'items',
@@ -80,13 +83,11 @@ router.put('/:cartID',Auth.isLoggedIn, Auth.isItYours(Cart,'cartID'),(req,res)=>
         }
         else{
            //push a new item into the cart
-           Item.create(req.body,function(err,newItem){
+           Item.findOne({product:req.params.productID},function(err,foundItem){
                if(err){
                    res.send('error')
                }else{
-                   newItem.owner=req.user._id;
-                   newItem.save();
-                   foundCart.items.push(newItem);
+                   foundCart.items.push(foundItem);
                    foundCart.save();
                    res.json(foundCart);
                }

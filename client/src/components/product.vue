@@ -1,7 +1,7 @@
 <template>
-     <div class="product-card">
+     <div class="product-card" @click="$emit('productclick')">
             <div class="product-image">
-                <img src="../assets/product.svg" alt="">
+                <img :src="avi" alt="">
             </div>
             <div class="details">
                 <p>{{name}}</p>
@@ -18,7 +18,7 @@ export default {
 
         }
     },
-    props:['name','price','qty']
+    props:['name','price','qty','avi'],
 }
 </script>
 

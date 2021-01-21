@@ -30,6 +30,7 @@
                </div>
            </div>
            <div class="details" v-if="userDetail">
+                <p class="error">{{error}}</p>
                 <label for="username">Username</label>
                 <input type="text" id="username" v-model="seller.username">
                 <label for="password">Password</label>
@@ -38,12 +39,12 @@
                 <input type="email" id="email" v-model="seller.email">
                 <label for="country">Country</label>
                 <select  id="country" v-model="seller.country">
-                    <option value="NG">Nigeria</option>
-                    <option value="GH">Kenya</option>
-                    <option value="KE">Ghana</option>
+                    <option value="ng">Nigeria</option>
+                    <option value="gh">Kenya</option>
+                    <option value="ke">Ghana</option>
                 </select>
                 <img v-if="logging" src="https://s2.svgbox.net/loaders.svg?color=66C9FF&ic=spinner" alt="loader" width="32" height="32">
-                <button v-if="$route.params.id==='buyer' && !logging" @click="signUp()">SIGN UP</button>
+                <button v-if="$route.params.id==='buyer' && !logging" @click="register($route.params.id)">SIGN UP</button>
                 <button @click="showDetail('store')" v-if="$route.params.id==='seller'">Next</button>
                 <p id="huh">Already have an account? <router-link :to="loginRoute">Login</router-link></p>
            </div>
@@ -66,7 +67,7 @@
                        <img src="https://s2.svgbox.net/loaders.svg?ic=three-dots" alt="loader" width="32" height="32">
                 </div>
                  <div class="loader bank" v-if="bankLoading">
-                       <p>Loading bank</p>
+                       <p>Loading bank select another country to refresh</p>
                        <img src="https://s2.svgbox.net/loaders.svg?ic=three-dots" alt="loader" width="32" height="32">
                 </div>
                 <div class="loader bank" v-if="creating">
@@ -77,19 +78,19 @@
                 <input type="text" id="account" v-model="accountNumber">
                 <label for="country">Country</label>
                 <select id="country" v-model="country" @change="getBanks()">
-                    <option value="NG">Nigeria</option>
-                    <option value="GH">Ghana</option>
-                    <option value="KE">Kenya</option>
+                    <option value="ng">Nigeria</option>
+                    <option value="gh">Ghana</option>
+                    <option value="ke">Kenya</option>
                 </select>
                 <label for="bank" >Bank</label>
-                <select id="bank" v-model="userBankCode">
+                <select id="bank" v-model="userBankCode" @change="console(userBankCode)">
                     <option v-for="(bank,index) in banks" :key="index" :value="bank.code">
                          {{bank.name}}
                     </option>
                 </select>
-                <button id="ve" @click="verifyDetails()" :disabled="verifying">Verify Account</button>
+                <button id="ve" @click="verifyBank()" :disabled="verifying">Verify Account</button>
                 <img v-if="logging" src="https://s2.svgbox.net/loaders.svg?color=66C9FF&ic=spinner" alt="loader" width="32" height="32">
-                <button :disabled="!bankVerified && !creating" @click="signUp()">Sign Up</button>
+                <button :disabled="!bankVerified && !creating" @click="register($route.params.id)">Sign Up</button>
            </div>
    </div>
 </template>
@@ -122,6 +123,7 @@ export default {
               verifying:false,
               creating:false,
               logging:false,
+              buyerFields:false,
               cc:'NG',
               country:'NG',
               accountNumber:'',
@@ -151,8 +153,10 @@ export default {
                         this.accountDetail=true;
                     }
          },
+         console(data){
+              console.log(data);
+         },
          getBanks(){
-             this.bankLoading=true;
              this.$http.get(`http://localhost:3000/flutter/banks/${this.country}`).then(res=>{
                     this.banks=res.data.data;
                     this.bankLoading=false;
@@ -171,7 +175,16 @@ export default {
                }
                console.log(sub);
                this.error='';
-               this.$http.post('http://localhost:3000/flutter/subaccounts',sub)
+               this.$http.post('http://localhost:3000/flutter/subaccounts',
+                    {
+                        "account_bank": `${sub.account_bank}`,
+                        "account_number": `${sub.account_number}`,
+                        "business_name": `${sub.business_name}`,
+                        "business_email": `${sub.business_email}`,
+                        "business_mobile": `${sub.business_mobile}`,
+                        "country": `${sub.country}`,
+                        "split_value": 0.975
+                    })
               .then(res=>{
                   this.creating=false;
                   if(res.data.status==='success'){
@@ -220,8 +233,20 @@ export default {
                  this.error=err.message;
              })
          },
+         verifyBuyerField(){
+               const fields=['username','password'];
+               for(let i=0;i<fields.length;i++){
+                 if(this.seller[fields[i]]===''){
+                     this.error=`Please fill your ${fields[i]}`;
+                     console.log(`Please fill your ${fields[i]}`)
+                     return;
+                 }
+             }
+             this.error='';
+             this.buyerFields=true;
+         },
          verifySellerField(){
-             const fields=['username','email','password','shopname','shopDescription','phone','address'];
+             const fields=['username','password','shopname','shopDescription','phone','address'];
              for(let i=0;i<fields.length;i++){
                  if(this.seller[fields[i]]===''){
                      if(fields[i]==='username' || fields[i]==='password'){
@@ -244,43 +269,49 @@ export default {
                   this.createsubaccount();
                }
          },
-         signUp(){
-             this.verifySellerField();
-             if(this.fieldsVerified){
+         register(user){
+             let condition=false;
+             if(user==='seller'){
+                 this.verifySellerField();
+               if(this.fieldsVerified){
                  this.createsubaccount();
+                 condition=this.detailsVerified;
+               }
              }
-             if(this.detailsVerified){
-                     this.logging=true;
-             this.seller.country=this.cc;
-             this.$http.post(`http://localhost:3000/auth/${this.$route.params.id}/register`,this.seller)
-            .then(res=>{
-                this.logging=false;
-                if(!res.data.loggedIn){
-                    this.error=res.data.message;
-                 }else{
-                     console.log('logged in here');
-                    if(this.$route.params.id==='seller'){
-                          this.$router.push('/shops/myShop');
-                    }else{
-                           this.$router.push(`/markets/${this.cc}`);
-                    }
-                 }
-            })
-            .catch(err=>{
-                console.log(err.message);
-            })
-         }
+             else if(user==='buyer'){
+                 this.verifyBuyerField();
+                 condition=this.buyerFields;
              }
+             if(!condition){
+                    console.log('reg starting')
+                    this.logging=true;
+                    this.$http.post(`http://localhost:3000/auth/${user}/register`,this.seller)
+                    .then(res=>{
+                    this.logging=false;
+                    if(!res.data.loggedIn){
+                         this.error=res.data.message;
+                        }else{
+                        if(user==='seller'){
+                             this.$router.push('/shops/myShop');
+                        }else{
+                            this.$router.push(`/markets/${this.seller.country}`);
+                        }
+                        }
+                    })
+                    .catch(err=>{
+                     console.log('rgister error block',err.message);
+                    })
+             }
+         },
       },
       created(){
              this.loginRoute=`/${this.$route.params.id}/login`;
              this.$http.get(`http://localhost:3000/flutter/banks/NG`).then(res=>{
-                    if(res.data){
+                    if(res.data.length>0){
                         this.banks=res.data.data;
                         this.bankLoading=false;
                         this.error='';
-                    }else{
-                       this.error="Select another country to load banks";
+                        console.log(res.data);
                     }
              });
       }

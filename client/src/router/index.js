@@ -77,7 +77,7 @@ const routes = [
       import("../views/cart.vue")
   },
   {
-    path: "/market/:cc/products/:id",
+    path: "/market/:cc/items/:id",
     name: "Item",
     component: () =>
       import("../views/item.vue")

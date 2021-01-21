@@ -13,4 +13,14 @@ router.get('/currentUser',Auth.isLoggedIn,(req,res)=>{
     })
 })
 
+router.get('/',(req,res)=>{
+    User.find({},(err,users)=>{
+        if(err){
+            return res.send('error');
+        }else{
+            res.json(users);
+        }
+    })
+})
+
 module.exports=router;

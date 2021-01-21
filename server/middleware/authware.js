@@ -27,14 +27,14 @@ module.exports={
         return (req,res,next)=>{
             item.findById(req.params[id],function(err,foundItem){
                 if(err){
-                    res.send('error');
+                    return res.send('err');
                 }else{
-                if(foundItem.owner.equals(req.user._id)){
-                    return next();
-                }
-                else{
-                    res.send('You cant edit what is not yours');
-                }
+                    if(foundItem.owner.equals(req.user._id)){
+                        return next();
+                    }
+                    else{
+                        return res.send('Sir you cant edit what is not yours');
+                    }
                 }
             })
          }
@@ -42,16 +42,12 @@ module.exports={
    areYouApproved:(req,res,next)=>{
        Shop.findOne({owner:req.user._id},function(err,foundShop){
            if(err){
-               res.json({
-                   approved:false
-               })
+              return res.send('error');
            }else{
                if(foundShop.isApproved){
                    return next();
                }else{
-                   res.json({
-                       approved:false
-                   })
+                   res.json(foundShop);
                }
            }
        })

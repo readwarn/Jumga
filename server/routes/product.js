@@ -100,7 +100,7 @@ router.get('/:productID',(req,res)=>{
 })
 
 router.put('/:productID',Auth.isItYours(Product,'productID'),(req,res)=>{
-      Product.findById(req.params.productID)
+       Product.findById(req.params.productID)
       .populate([
         {
             path:'owner',
@@ -113,7 +113,7 @@ router.put('/:productID',Auth.isItYours(Product,'productID'),(req,res)=>{
       ])
       .exec(function(err,foundProduct){
           if(err){
-              res.send('error');
+              res.send('error finding prooduct');
           }else{
               foundProduct.qty=req.body.qty;
               foundProduct.save();

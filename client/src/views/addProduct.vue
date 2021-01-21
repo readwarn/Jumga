@@ -5,12 +5,14 @@
           </nav>
           <div class="upload">
             <p>Add new product</p>
-            <p>{{error}}</p>
-            <label for="file" class="file" :style="{backgroundImage:product.displayPicture}">
+            <label for="file" class="file">
                 <img :src="product.displayPicture" alt="loader" id="bg">
-                <input type="file" name="file" id="file" @change="uploadProductImage">
-                <img src="../assets/Cloud.svg" alt="">
-                <p>click to choose image</p>
+                <loader v-if="uploading && !uploaded" />
+                <div v-if="!uploading && !uploaded">
+                    <input type="file" name="file" id="file" @change="uploadProductImage">
+                    <img src="../assets/Cloud.svg" alt="">
+                    <p>click to choose image</p>
+                </div>
             </label>
             <label for="name">Product name</label>
             <input type="text" id="name" v-model="product.name">
@@ -30,12 +32,13 @@
             <input type="number" id="del" v-model="product.delivery">
             <label for="country">Country</label>
              <select id="country" v-model="product.country">
-                 <option value="NG">Nigeria</option>
-                 <option value="GH">Ghana</option>
-                 <option value="KE">Kenya</option>
+                 <option value="ng">Nigeria</option>
+                 <option value="gh">Ghana</option>
+                 <option value="ke">Kenya</option>
              </select>
+            <p class="error">{{error}}</p>
             <div class="input-box">
-                 <button @click="$router.push('/shops/myShop')">CANCEL</button>
+                 <router-link to="/shops/myShop"><button>CANCEL</button></router-link>
                  <img v-if="loading" src="https://s2.svgbox.net/loaders.svg?ic=tail-spin" height="30" width="30" alt="updating">
                  <button v-if="!loading"  @click="addProduct()">ADD AND PROCEED</button>
             </div>
@@ -44,18 +47,22 @@
 </template>
 
 <script>
+import Loader from '../components/loader.vue';
 export default {
      name:"newProduct",
+     components:{Loader},   
      data(){
        return{
            error:'',
            loading:false,
            fieldsVerified:false,
+           uploading:false,
+           uploaded:false,
            product:{
                name:'',
                delivery:100,
                price:'',
-               displayPicture:'',
+               displayPicture:'https://www.publicdomainpictures.net/pictures/30000/velka/plain-white-background.jpg',
                country:'',
                description:'',
                qty:1
@@ -75,7 +82,7 @@ export default {
              const fields=['name','delivery','price','displayPicture','country','description','qty'];
              for(let i=0;i<fields.length;i++){
                  if(this.product[fields[i]]===''){
-                     this.error=`Please fill your ${fields[i]}`;
+                     this.error=`Please fill the product ${fields[i]}`;
                      return;
                  }
              }
@@ -92,13 +99,12 @@ export default {
                     this.product={
                         name:'',
                         price:'',
-                        displayPicture:'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTSYwGRJNe1c9WCBU2aOwYqPwLf2uI0E8hD-Q&usqp=CAU',
+                        displayPicture:'https://www.publicdomainpictures.net/pictures/30000/velka/plain-white-background.jpg',
                         country:'',
                         description:'',
                         qty:1
                     }
-                    if(!res.data.approved){
-                        console.log('her');
+                    if(!res.data.isApproved){
                         this.$router.push('/payment');
                     }
               });
@@ -107,6 +113,7 @@ export default {
          uploadProductImage(e){
             const image = e.target.files[0];
             if(image.size<150000){
+                this.uploading=true;
                 const formData = new FormData();
                 formData.append('file', image);
                 formData.append('upload_preset', 'qv83yxtp');
@@ -115,10 +122,11 @@ export default {
                 body: formData,
                 })
                 .then(response => response.json())
-                .then((data) => {
-                 console.log(data.secure_url);   
+                .then((data) => {  
                  this.product.displayPicture=data.secure_url;
-                 this.error="Pic set";
+                 this.error="";
+                 this.uploading=false;
+                 this.uploaded=true;
                 })
                 .catch(err => console.error(err));
             }else{
@@ -141,6 +149,7 @@ export default {
         width: 100%;
         border-bottom: 1.5px solid #005B94;
         background: #ffffff;
+        z-index: 10;
     }
     h3{
         color: #005B94;
@@ -175,6 +184,12 @@ export default {
         position: absolute;
         width: 100%;
         height: 100%;
+        z-index: -1;
+    }
+    p.error{
+        font-size: 0.85rem;
+        color: red;
+        margin-bottom: 10px;
     }
     label{
         margin-bottom: 10px;

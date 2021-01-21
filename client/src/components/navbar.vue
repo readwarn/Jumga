@@ -1,7 +1,7 @@
 <template>
 <div @click.self="profile=false">
    <nav> 
-        <router-link :to="route"> 
+        <router-link :to="homeLink"> 
             <div class="brand">
                 <h3>Jumga</h3>
                 <img src="https://s2.svgbox.net/hero-outline.svg?color=219653&ic=shopping-bag" height="30" width="30" alt="brand">
@@ -34,12 +34,13 @@
 <script>
 export default {
     name:"Navbar",
-    props:['cc','route'],
+    props:['cc'],
     data(){
         return{
             rotate:false,
             profile:false,
-            cartLink:'/cart/NG',
+            cartLink:'/cart/ng',
+            homeLink:'/markets/ng',
             user:{
                 username:"Rilwan"
             }
@@ -50,7 +51,8 @@ export default {
         .then(res=>{
             this.user=res.data;
         })
-        this.cartLink=`/cart/${this.cc}`
+        this.cartLink=`/cart/${this.cc}`;
+        this.homeLink=`/markets/${this.cc}`;
     },
     methods:{
         goto(){

@@ -6,15 +6,16 @@
          </h3>
      </nav>
      <div class="content">
-        <div v-if="addProduct" class="addProduct">
+        <div v-if="showaddProduct" class="addProduct">
             <div>
                 <h4>Add More!!!</h4>
                 <input type="number" :min="qty" v-model="qty">
-                <button @click="updateProduct()">UPDATE</button>
+                <img v-if="updating" src="https://s2.svgbox.net/loaders.svg?ic=tail-spin" height="30" width="30" alt="updating">
+                <button v-if="!updating" @click="updateProduct()">UPDATE</button>
             </div>
         </div>
         <loader v-if="gettingShop" bg='white'/>
-        <div class="banner"  v-if="!gettingShop">
+        <div class="banner"  v-if="!gettingShop && !showaddProduct">
             <div class="detail">
                <h2 class="title">{{shop.name}}</h2>
                <p class="subtitle">
@@ -38,7 +39,7 @@
            </div>
            
      </div>
-     <div class="product-container" v-if="!gettingShop">
+     <div class="product-container" v-if="!gettingShop && !showaddProduct">
          <product v-for="(product,index) in shop.products" :key="index" v-on:productclick="hold(index,product)" :qty="product.qty" :name="product.name" :price="product.price"/>
      </div>
      </div>
@@ -49,30 +50,30 @@
 <script>
 import product from "@/components/product.vue";
 import loader from "@/components/loader.vue";
-import Loader from '../components/loader.vue';
 export default {
     name:"Shop",
     data(){
         return{
           qty:1,
           i:0,
-          addProduct:false,
-          productID:'',  
+          showaddProduct:false,
+          updating:false,
           gettingShop:true,
+          productID:'',  
           addProductRoute:'',  
           shop:{},
         }
     },
     components:{
-        product,
-        loader
+        product,loader
     },
-    mathods:{
+    methods:{
         hold(index,product){
             this.i=index;
             this.qty=product.qty;
             this.productID=product._id;
-            this.addProduct=true;
+            this.showaddProduct=true;
+            console.log(product._id);
         },
         addProduct(){
               if(shop.isApproved){
@@ -82,10 +83,13 @@ export default {
               }
         },
         updateProduct(){
+            this.updating=true;
             this.$http.put(`http://localhost:3000/products/${this.productID}`,{qty:this.qty})
             .then(res=>{
+                this.updating=false;
                 this.shop.products.splice(this.i,1,res.data);
                 this.addProduct=false;
+                this.showaddProduct=false;
             })
         }
     },
@@ -95,12 +99,13 @@ export default {
              if(res.data.loggedIn){
                  this.$http.get('http://localhost:3000/shops/myShop')
                  .then(res=>{
-                     this.shop=res.data;
-                     this.addProductRoute=`/newProduct/${this.shop._id}`;
                      this.gettingShop=false;
+                     this.shop=res.data;
+                     console.log(this.shop);
+                     this.addProductRoute=`/newProduct/${this.shop._id}`;
                  })
              }else{
-                this.$router.push('/login/seller');
+                this.$router.push('/seller/login');
              }
          })
          .catch(err=>{
@@ -123,6 +128,7 @@ nav{
     top: 0;
     left: 0;
     width: 100%;
+    z-index: 10;
     background: #ffffff;
 }
 h3{
@@ -210,11 +216,15 @@ button:hover{
     box-shadow: 0px 1px 2px 0px rgba(102,96,102,1);
 }
 div.addProduct{
-    height: calc(100v - 65px);
+    height: 100vh;
     width: 100%;
     display: flex;
     justify-content: center;
     align-items: center;
+    border: 1px solid red;
+    position: fixed;
+    top: 0;
+    left: 0;
 }
 div.addProduct div{
     width: 33%;

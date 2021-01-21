@@ -1,6 +1,6 @@
 <template>
      <div class="item-container">
-         <navbar :cc="$route.params.cc" />
+         <!-- <navbar :cc="$route.params.cc" /> -->
          <loader v-if="loading" />
          <div class="content"  v-if="!loading">
                <p class="error">{{error}}</p>
@@ -12,7 +12,7 @@
                           <p>Delivery fee ₦{{item.product.delivery}}</p>
                           <label id="mb" for="qty">Units</label>
                           <update-item-button v-on:minusclick="decreaseItem()" :disable="updating" v-on:plusclick="increaseItem()" />
-                          <input type="number" min="1" name="qty" id="qty" :max="item.product.qty" v-model="units">
+                          <input type="number" min="1" name="qty" id="qty" :max="item.product.qty" v-model="item.quantity">
                           <label for="address">Address</label>
                           <textarea id="address" cols="30" rows="6" v-model="address"></textarea>
                           <div class="input-box">
@@ -39,26 +39,28 @@ export default {
     name:"Item",
     data(){
         return{
-            item:'',
             loading:true,
             units:1,
             address:'Ibadan',
             updating:false,
             carting:false,
+            cart:'',
             buying:false,
-            error:''
+            error:'',
+            item:{quantity:1},
         }
     },
     methods:{
         increaseItem(){
-            this.updateItem();
             this.units+=1;
+            this.updateItem();
         },
         decreaseItem(){
-            this.updateItem();
             this.units-=1;
+            this.updateItem();
         },
         updateItem(){
+              console.log(this.item)
              if(this.units>this.item.product.qty){
                 this.error='Not enough product from seller';
              }else{
@@ -72,7 +74,7 @@ export default {
         },
         updateCart(){
                this.carting=true;
-               this.$http.put(`http://localhost:3000/carts/${this.cart._id}`,this.item)
+               this.$http.put(`http://localhost:3000/carts/${this.cart._id}/${this.item.product._id}`)
               .then(res=>{
                   console.log(res.data);
                   this.carting=false;
@@ -84,20 +86,28 @@ export default {
                  this.error='Fill the address';
                 
             }else{
-                  const cost =(this.item.product.price * this.units) + this.product.delivery;
+                  const cost =(this.item.product.price * this.units) + this.item.product.delivery;
+                  let currency='NGN';
+          if(this.$route.params.cc==='ng'){
+              currency==='NGN'
+          }else if(this.$route.params.cc==='gh'){
+              currency==='NGN'
+          }else{
+              currency==='NGN'
+          }
             const pay={
                 amount:cost,
-                country:this.$route.params.cc,
+                country:currency,
                 subaccount:[
                     {
-                        id:this.product.shop.accountID,
+                        id:this.item.product.shop.accountID,
                         transaction_charge_type:"flat_subaccount",
-                        transaction_charge:`${this.product.price*this.units*0.975}`
+                        transaction_charge:`${this.item.product.price*this.units*0.975}`
                     },
                     {
                         id:'RS_BF90AF968D5DFF286579ECD2B3EB1994',
                         transaction_charge_type:"flat_subaccount",
-                        transaction_charge:`${this.product.delivery*0.8}`
+                        transaction_charge:`${this.item.product.delivery*0.8}`
                     }
                 ]
             }
@@ -113,12 +123,18 @@ export default {
     created(){
             this.$http.get('http://localhost:3000/auth/status')
            .then(res=>{
-               if(res.data.loggedIn){
+               if(!res.data.loggedIn){
                  this.$router.push('/buyer/login');
                }else{ 
-                  this.$http.get(`http://localhost:3000/items/product/${this.$route.params.id}`)
+                  this.$http.get(`http://localhost:3000/items/${this.$route.params.id}`)
                   .then(res=>{
                       this.item=res.data;
+                      console.log(res.data);
+                      this.$http.get(`http://localhost:3000/carts/${this.$route.params.cc}/myCart`)
+                      .then(res=>{
+                          this.cart=res.data;
+                          this.loading=false;
+                      })
                   })
                }
            })

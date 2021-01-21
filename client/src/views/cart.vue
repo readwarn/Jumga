@@ -35,7 +35,7 @@
                     <div class="item-box">
                         <img :src="item.product.displayPicture" class="avi" alt="product">
                         <div class="detail">
-                            <p>Seller: {{item.shop.name}}</p>
+                            <p>Seller: {{item.product.shop.name}}</p>
                             <router-link :to="itemRoute(item)">{{item.product.name}}</router-link>
                             <img id="load" v-if="deleting" src="https://s2.svgbox.net/loaders.svg?ic=tail-spin" height="30" width="30" alt="updating">
                             <div class="delete" v-if="!deleting" @click="deleteItem(item)">
@@ -95,7 +95,7 @@ export default {
     components:{loader, UpdateItemButton, navbar},
     data(){
         return{
-            route:'/markets/NG',
+            route:'markets/ng',
             empty:false,
             loading:true,
             updating:false,
@@ -111,7 +111,7 @@ export default {
     },
     methods:{
          itemRoute(item){
-              return `/market/${this.$route.params.id}/products/${item.product._id}`
+              return `/market/${this.$route.params.id}/products/${item._id.toString()}`
          },
          decreaseItem(item,index){
              this.units-=1;
@@ -122,12 +122,16 @@ export default {
              this.updateItem(item,index);
          },
          updateItem(item,index){
-            if(this.units>item.product.qty){
-                this.error='Not enough products from seller';
+            if(this.units>item.product.qty || this.units<1){
+                 if(this.units<1){
+                      this.error='common, you cant have less than one';
+                 }else{
+                    this.error='Not enough products from seller';
+                 }
              }else{
                   this.updating=true;
                   this.$http.put(`http://localhost:3000/items/${item._id}`,{quantity:this.units})
-                .then(res=>{
+                 .then(res=>{
                     this.updating=false;
                     this.cart.items.splice(index,1,res.data);
                 })
@@ -173,9 +177,18 @@ export default {
           const cost = this.total + this.delivery;
           const dispatch = this.createSubaccount('RS_9F16F4F847387A9808A177EC80DB969F',this.delivery*0.8);
           subs.push(dispatch);
+          let currency='NGN';
+          if(this.$route.params.id==='ng'){
+              currency==='NGN'
+          }else if(this.$route.params.id==='gh'){
+              currency==='NGN'
+          }else{
+              currency==='NGN'
+          }
+
           const pay={
                 amount:cost,
-                country:this.$route.params.id,
+                country:currency,
                 subaccount:subs
            }
            this.$http.post('http://localhost:3000/flutter/pay',pay)
@@ -194,9 +207,9 @@ export default {
                }else{
                    this.$http.get(`http://localhost:3000/carts/${this.$route.params.id}/myCart`)
                   .then(res=>{
+                       console.log(res.data);
                        this.loading=false;
                        this.cart=res.data;
-                       console.log(this.cart);
                        if(this.cart.items.length===0){
                            this.empty=true;
                        }else{

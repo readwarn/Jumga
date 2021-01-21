@@ -8,7 +8,7 @@ router.get('/myShop',Auth.isLoggedIn,(req,res)=>{
      Shop.findOne({owner:req.user._id})
      .populate([
          {
-           path:'product',
+           path:'products',
            model:'Product'
          },
          {
@@ -45,6 +45,9 @@ router.put('/:shopID',Auth.isLoggedIn,Auth.isItYours(Shop,'shopID'),Auth.areYouA
                 if(err){
                     return res.send('err');
                 }else{
+                    newProduct.shop=foundShop._id;
+                    newProduct.owner=req.user._id;
+                    newProduct.save();
                     foundShop.products.push(newProduct);
                     foundShop.save();
                 }

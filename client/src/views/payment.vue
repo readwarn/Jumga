@@ -3,16 +3,16 @@
           <nav>
               <h3>Jumga</h3>
           </nav>
+          <p class="info">You are required to pay a token of <span>{{mid}}{{amount}}</span> for your account to be approved</p>
           <img id="banner" src="../assets/payment.svg" alt="payment">
           <label for="email">Email</label>
-          <input type="text" id="email" v-model="email">
+          <input  type="text" id="email" v-model="email">
           <label for="cc">Change country</label>
           <select id="cc" v-model="country" @change="calc()">
-              <option value="NG">Nigeria</option>
-              <option value="GH">Ghana</option>
-              <option value="KE">Kenya</option>
+              <option value="ng">Nigeria</option>
+              <option value="gh">Ghana</option>
+              <option value="ke">Kenya</option>
           </select>
-          <p class="info">You are required to pay a token of <span>{{mid}}{{amount}}</span> for your account to be approved</p>
           <img v-if="loading" id="load" src="https://s2.svgbox.net/loaders.svg?ic=tail-spin" height="30" width="30" alt="updating">
           <button v-if="!loading" @click="makePayment()">Proceed with payment</button>
           <button @click="$router.push('/shops/myShop')">Go back home</button>
@@ -34,19 +34,19 @@ export default {
       },
       methods:{
           calc(){
-              if(this.country==='NG'){
+              if(this.country==='ng'){
                   this.amount=8000;
                   this.mid='₦';
-                  this.country='NG';
+                  this.country='ng';
               }
-              else if(this.country==='GH'){
+              else if(this.country==='gh'){
                   this.amount=100;
                   this.mid='₵'
-                  this.country='GH';
+                  this.country='gh';
               }else{
                   this.amount=2200;
                   this.mid='K'
-                  this.country='KE';
+                  this.country='ke';
               }
           },
           makePayment(){
@@ -78,11 +78,19 @@ export default {
 </script>
 
 <style scoped>
-    div.payment-container{
-        height: 100%;
-    }
-    nav{
+        div.payment-container{
+            height: 100%;
+            overflow: hidden;
+        }
+        nav{
         padding: 10px 50px;
+        margin-bottom: 10px;
+        box-shadow: 0px 1px 2px 0px rgba(102,96,102,1);
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        background: #ffffff;
     }
     h3{
         color: #005B94;
@@ -91,17 +99,17 @@ export default {
     }
     img#banner{
         width: 60%;
-        height: 30%;
+        height: 25%;
         display: block;
-        margin: auto;
+        margin: 30px auto;
     }
     p.info{
-        font-size: 1.1rem;
+        font-size: 1.2rem;
         line-height: 128%;
         width: 60%;
         text-align: center;
         color: #00253C;
-        margin: 25px auto;
+        margin: 85px auto 0px auto;
     }
     P.info span{
         color: #219653;
@@ -121,12 +129,13 @@ export default {
         outline: none;
         border: none;
     }
-    select{
+    select,input{
         height: 40px;
-        width: 200px;
+        width: 30%;
         padding: 10px;
         display: block;
         margin: auto;
+        margin-bottom: 20px;
         background: #F2F2F2;
         color: #00253C;
         outline:none;
@@ -136,8 +145,8 @@ export default {
          box-shadow: 0px 1px 2px 0px rgba(102,96,102,1);
     }
     label{
-        font-size: 1rem;
-        text-align: center;
+        font-size: 0.85rem;
+        width: 30%;
         display: block;
         margin: auto;
         margin-bottom: 7px;
@@ -149,11 +158,21 @@ export default {
     }
 
     @media only screen and (max-width: 720px) {
+        div.payment-container{
+            overflow: scroll;
+            padding-bottom: 20px;
+        }
         p.info{
-            width: 75%;
+            font-size: 1rem;
         }
         img#banner{
-            height: 43%;
+            height: 33%;
+        }
+        select,input,label{
+            width: 80%;
+        }
+        label{
+            font-size: 0.8rem;
         }
         nav{
             padding: 10px 15px;
