@@ -1,24 +1,22 @@
 <template>
      <div class="item-container">
-         <!-- <navbar :cc="$route.params.cc" /> -->
+         <navbar :cc="$route.params.cc" :item="cart.items.length" v-if="!loading" />
          <loader v-if="loading" />
          <div class="content"  v-if="!loading">
-               <p class="error">{{error}}</p>
                <div class="product-container">
                       <img :src="item.product.displayPicture" alt="product">
                       <div class="details">
                           <h4>{{item.product.name}}</h4>
                           <p class="price">₦{{item.product.price}}</p>
-                          <p>Delivery fee ₦{{item.product.delivery}}</p>
+                          <p class="del">Delivery fee ₦{{item.product.delivery}}</p>
                           <label id="mb" for="qty">Units</label>
-                          <update-item-button v-on:minusclick="decreaseItem()" :disable="updating" v-on:plusclick="increaseItem()" />
-                          <input type="number" min="1" name="qty" id="qty" :max="item.product.qty" v-model="item.quantity">
+                          <update-item-button :value="units" :width="50" v-on:minusclick="decreaseItem()" :disable="updating" v-on:plusclick="increaseItem()" />
+                          <p class="error">{{error}}</p>
                           <label for="address">Address</label>
                           <textarea id="address" cols="30" rows="6" v-model="address"></textarea>
                           <div class="input-box">
-                              <img v-if="carting" id="load" src="https://s2.svgbox.net/loaders.svg?ic=tail-spin" height="30" width="30" alt="updating">
                               <button @click="updateCart()" v-if="!carting">ADD TO CART</button>
-                              <img v-if="buying" id="load" src="https://s2.svgbox.net/loaders.svg?ic=tail-spin" height="30" width="30" alt="updating">
+                              <img v-if="buying || carting" id="load" src="https://s2.svgbox.net/loaders.svg?ic=tail-spin" height="30" width="30" alt="updating">
                               <button v-if="!buying" @click="buynow()">BUY NOW</button>
                           </div>
                           <p>Sold by <span id="seller">{{item.product.shop.name}}</span></p>
@@ -52,29 +50,36 @@ export default {
     },
     methods:{
         increaseItem(){
-            this.units+=1;
-            this.updateItem();
+            if(this.units===this.item.product.qty){
+               this.error='Not enough product from seller';
+            }else{
+                this.units+=1;
+                this.updateItem();
+                this.error='';
+            }
         },
         decreaseItem(){
-            this.units-=1;
-            this.updateItem();
+            if(this.units===1){
+                this.error='You want to order 0 item? lol';
+            }else{
+                this.units-=1;
+                this.updateItem();
+                this.error='';
+            }
         },
         updateItem(){
-              console.log(this.item)
-             if(this.units>this.item.product.qty){
-                this.error='Not enough product from seller';
-             }else{
-                  this.updating=true;
-                  this.$http.put(`http://localhost:3000/items/${this.item._id}`,{quantity:this.units})
-                .then(res=>{
-                    this.updating=false;
-                    this.item=res.data;
-                })
-             }
+            this.updating=true;
+            this.$http.put(`http://localhost:3000/items/${this.item._id}`,{quantity:this.units})
+            .then(res=>{
+                this.updating=false;
+                this.item=res.data;
+            }) 
         },
         updateCart(){
                this.carting=true;
-               this.$http.put(`http://localhost:3000/carts/${this.cart._id}/${this.item.product._id}`)
+               console.log(this.cart);
+               console.log(this.item);
+               this.$http.put(`http://localhost:3000/carts/${this.cart._id}/${this.item._id}`,this.item)
               .then(res=>{
                   console.log(res.data);
                   this.carting=false;
@@ -115,6 +120,7 @@ export default {
             this.$http.post('http://localhost:3000/flutter/pay',pay)
             .then(res=>{
                 this.buying=false;
+                window.location.href = (res.data.flutterData.data.link);
                 console.log(res.data);
             })
             }
@@ -129,10 +135,10 @@ export default {
                   this.$http.get(`http://localhost:3000/items/${this.$route.params.id}`)
                   .then(res=>{
                       this.item=res.data;
-                      console.log(res.data);
-                      this.$http.get(`http://localhost:3000/carts/${this.$route.params.cc}/myCart`)
+                       this.$http.get(`http://localhost:3000/carts/${this.$route.params.cc}/myCart`)
                       .then(res=>{
                           this.cart=res.data;
+                          console.log(this.cart.items.length);
                           this.loading=false;
                       })
                   })
@@ -149,21 +155,6 @@ img#load{
 }
 div.item-container{
     height: 100%;
-}
-nav{
-    padding: 10px 50px;
-    margin-bottom: 10px;
-    box-shadow: 0px 1px 2px 0px rgba(102,96,102,1);
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    background: #ffffff;
-}
-h3{
-    color: #005B94;
-    font-size: 2rem;
-    line-height: 130%;
 }
 p{
     color: black;
@@ -183,7 +174,9 @@ input#qty{
 div.content{
     width: 70%;
     margin:auto;
-    margin-top: 80px; 
+    background: gainsboro;
+    padding: 20px;
+    margin-top: 63px; 
 }
 div.product-container{
     display: flex;
@@ -191,7 +184,8 @@ div.product-container{
     align-items: center;
     justify-content: space-between;
     margin-bottom: 40px;
-    background: #E5E5E5;
+    border: 1px solid black;
+    background: #fffff5;
     padding: 25px;
 }
 div.product-container img{
@@ -212,13 +206,15 @@ span#seller{
 h4{
     color: #00253C;
     line-height: 29px;
-    margin-bottom: 15px;
+    margin-bottom: 10px;
+}
+p.del{
+    margin-bottom: 20px;
 }
 p.price{
     color: #219653;
     font-weight: 700;
     font-size: 1.1rem;
-    margin-bottom: 1px;
 }
 p.title{
     font-size: 1rem;
@@ -230,14 +226,14 @@ p.title{
 label{
     font-size: 0.9rem;
     color: #00253C;
-    margin-right: 15px;
     display: block;
+    margin-top: 25px;
 }
 input{
     width: 100px;
     height: 40px;
     padding: 10px;
-    margin-bottom: 15px;
+    margin-bottom: 5px;
 }
 div.input-box{
     display: flex;
@@ -246,11 +242,9 @@ div.input-box{
     width: 100%;
     margin-bottom: 15px;
 }
-div.input-box button:nth-child(1){
-    background: #66C9FF;
-}
-div.input-box button:nth-child(2){
-    background: #219653;
+div.input-box img{
+    width: 30px;
+    height: 30px;
 }
 button{
     width:40%;
@@ -270,12 +264,15 @@ nav{
     margin-bottom: 10px;
 }
 div.content{
-    width: 92%;
+    width: 98%;
     padding-bottom: 40px;
 }
 div.product-container img{
     width: 100%;
     margin-bottom: 15px;
+}
+div.product-container{
+    padding:25px 10px;
 }
 div.details{
     width: 100%;

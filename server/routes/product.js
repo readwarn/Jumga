@@ -2,6 +2,7 @@ const express=require('express');
 const router=express.Router();
 const Product=require('../models/product');
 const Shop=require('../models/shop');
+const Item=require('../models/item');
 const Auth=require('../middleware/authware');
 
 router.get('/:cc',(req,res)=>{
@@ -61,7 +62,7 @@ router.post('/',Auth.isLoggedIn,Auth.areYouApproved,(req,res)=>{
     .exec(function(err,product){
         if(err){
             res.send('error')
-        }else{
+        }else{   
         Shop.findOne({owner:req.user._id},function(err,shop){
                  if(err){
                      return res.send(err);

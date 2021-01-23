@@ -1,6 +1,6 @@
 <template>
      <div class="market-container">
-          <navbar :cc="$route.params.id" />
+          <navbar :profile="profile" @profileclick="profile=!profile" :cc="$route.params.id" :item="cart.items.length" v-if="!loading" />
           <loader v-if="loading" />
           <div class="banner">
                 <h3>AMAZING DEALS THIS FRIDAY</h3>
@@ -12,7 +12,7 @@
                     <input type="text" id="search">
                 </div>
                 <div class="product-container">
-                     <product v-for="(product,index) in products" :key="index" :avi="product.displayPicture" @productclick="createItem(product)"  :price="product.price" :qty="product.qty" :name="product.name" />
+                     <product v-for="(product,index) in products" :key="index" :avi="product.displayPicture" @productclick="renderItem(product)"  :price="product.price" :name="product.name" />
                 </div>
           </div>
      </div> 
@@ -30,19 +30,16 @@ export default {
      data(){
          return{
               loading:true,
+              profile:false,
+              cart:'',
               itemRoute:'',
-              products:[1,3,4,5,5,5,5,5,5]
+              products:[]
          }
      },
      methods:{
-          createItem(product){
-                 this.$http.post(`http://localhost:3000/items/${product._id}`,{shop:product.shop})
-                .then(res=>{
-                    console.log(product.shop);
-                    this.itemRoute=`/market/${this.$route.params.id}/items/${res.data._id.toString()}`;
-                    this.$router.push(this.itemRoute);
-                })
-          },
+         renderItem(product){
+             this.$router.push(`/market/${this.$route.params.id}/items/${product._id.toString()}`);
+         }
      },
      created(){
              this.$http.get('http://localhost:3000/auth/status')
@@ -52,8 +49,12 @@ export default {
                }else{
                     this.$http.get(`http://localhost:3000/products/${this.$route.params.id}`)
                    .then(res=>{
-                       this.loading=false;
                        this.products=res.data;
+                       this.$http.get(`http://localhost:3000/carts/${this.$route.params.id}/myCart`)
+                      .then(res=>{
+                          this.cart=res.data;
+                          this.loading=false;
+                      })
                    })
                }
            })
@@ -64,20 +65,6 @@ export default {
 <style scoped>
 div.market-container{
     height: 100%;
-}
-nav{
-    padding: 10px 15px;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    border-bottom: 1.5px solid #005B94;
-    background: #ffffff;
-}
-h3{
-    color: #005B94;
-    font-size: 2rem;
-    line-height: 130%;
 }
 div.content{
     width: 80%;
@@ -118,24 +105,34 @@ div.product-container{
 }
 div.banner{
     display: flex;
-    justify-content: center;
     align-items: center;
-    background: url('../assets/deal.svg');
-    background-size: contain;
+    background: url('https://s2.svgbox.net/illlustrations.svg?ic=ironman');
+    background-size: 100% 100%;
     height: 25%;
-    margin-top: 62px;
+    margin-top: 65px;
     margin-bottom: 30px;
+    border: 1px solid black;
+    padding: 0 150px;
 }
 div.banner h3{
-    color: #ffffff;
+    color: #070707;
+    font-size: 1.5rem;
 }
 
  @media only screen and (max-width: 720px) {
-    nav{
-        padding: 10px 15px;
-    }
     div.content{
         width: 98%;
     }
-}
+    div.banner{
+        border:  1px solid purple;
+        background-size:80% 80%;
+        background-repeat: no-repeat;
+        background-position: 150% center;
+        padding: 0px 0px 0px 10px;
+    }
+    div.banner h3{
+    font-size: 1rem;
+    text-align: left;
+   }        
+  }
 </style>

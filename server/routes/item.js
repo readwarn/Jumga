@@ -5,6 +5,7 @@ const Cart=require('../models/cart');
 const Product=require('../models/product');
 const Auth=require('../middleware/authware');
 const product = require('../models/product');
+const item = require('../models/item');
 
 router.put('/:itemID',Auth.isLoggedIn,Auth.isItYours(Item,'itemID'),(req,res)=>{
    Item.findById(req.params.itemID)
@@ -25,15 +26,15 @@ router.put('/:itemID',Auth.isLoggedIn,Auth.isItYours(Item,'itemID'),(req,res)=>{
        if(err){
            return res.send('error');
        }else{
-           uptadedItem.quantity=req.body.quantity;
+           uptadedItem.quantity=uptadedItem.quantity + req.body.quantity;
            uptadedItem.save();
            res.json(uptadedItem);
        }
    })
 })
 
-router.get('/:itemID',Auth.isItYours(Item,'itemID'),(req,res)=>{
-    Item.findById(req.params.itemID)
+router.get('/:productID',(req,res)=>{
+    Item.findOne({product:req.params.productID})
     .populate([
         {
           path:'product',
@@ -60,7 +61,8 @@ router.post('/:productID',Auth.isLoggedIn,(req,res)=>{
     Item.create({
         owner:req.user._id,
         product:req.params.productID,
-        shop:req.body._id
+        shop:req.body.shop._id,
+        quantity:1
     },function(err,item){
         if(err){
             return res.send('error');
@@ -90,21 +92,38 @@ router.post('/:productID',Auth.isLoggedIn,(req,res)=>{
 })
 
 router.delete('/:itemID/:cartID',Auth.isLoggedIn,Auth.isItYours(Item,'itemID'),(req,res)=>{
-    Item.findByIdAndDelete(req.params.itemID,(err,deletedItem)=>{
+    Item.findById(req.params.itemID,(err,foundItem)=>{
           if(err){
               return res.send('error');
           }else{
              Cart.findById(req.params.cartID)
-             .populate({
-                 path:'items',
-                 model:'Item'
-             })
+             .populate(
+                {
+                path:'items',
+                populate:[
+                    {
+                        path:'product',
+                        model:'Product'
+                    },
+                    {
+                        path:'shop',
+                        model:'Shop'
+                    }
+                ]
+                },
+               )
              .exec(function(err,foundCart){
                  if(err){
                     return res.send('error');
                  }else{
-                    foundCart.items.pop(deletedItem);
-                    foundCart.save();
+                    console.log('fo') 
+                    foundCart.items.forEach((item,index)=>{
+                         if(foundItem._id.equals(item._id)){
+                            console.log('fOUNDitem ',item, ' index ',index);
+                            foundCart.items.splice(index,1);
+                            foundCart.save();   
+                         }
+                    })  
                     res.json(foundCart);
                  }
              })

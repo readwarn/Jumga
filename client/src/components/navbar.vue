@@ -8,10 +8,10 @@
             </div>
         </router-link>
         <div class="info">
-             <div class="user" @click="showProfile()">
+             <div class="user" @click="$emit('profileclick')">
                    <img src="https://s2.svgbox.net/hero-outline.svg?color=005B94&ic=user" height="25" width="25" alt="right">
                    <p>{{user.username}}</p>
-                   <img :class="{'rotate':rotate}" id="caret" src="https://s2.svgbox.net/octicons.svg?color=005B94&ic=chevron-right" height="14" width="14" alt="right">
+                   <img :class="{'rotate':profile}" id="caret" src="https://s2.svgbox.net/octicons.svg?color=005B94&ic=chevron-right" height="14" width="14" alt="right">
              </div>
              <div class="profile" v-if="profile">
                 <router-link :to="cartLink">My Order</router-link>
@@ -21,7 +21,7 @@
                  <div class="cart">
                         <img src="https://s2.svgbox.net/hero-outline.svg?color=005B94&ic=shopping-cart" width="35" height="35" alt="cart">
                         <div>
-                            <p>1</p>
+                            <p>{{item}}</p>
                         </div>
                  </div>
              </router-link>
@@ -34,11 +34,9 @@
 <script>
 export default {
     name:"Navbar",
-    props:['cc'],
+    props:['cc','item','profile'],
     data(){
         return{
-            rotate:false,
-            profile:false,
             cartLink:'/cart/ng',
             homeLink:'/markets/ng',
             user:{
@@ -55,15 +53,9 @@ export default {
         this.homeLink=`/markets/${this.cc}`;
     },
     methods:{
-        goto(){
-            
-        },
-        showProfile(){
-            this.profile=!this.profile;
-            this.rotate=!this.rotate;
-        },
         logout(){
             this.$http.get('http:localhost:3000/auth/logout');
+            this.$router.push('/buyer/login');
         }
     }
 }
@@ -73,6 +65,7 @@ export default {
 nav{
     padding: 10px 35px;
     position: fixed;
+    z-index: 10;
     top: 0;
     left: 0;
     width: 100%;

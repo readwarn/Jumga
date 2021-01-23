@@ -2,6 +2,7 @@ const express=require('express');
 const router=express.Router();
 const Shop=require('../models/shop');
 const Product = require('../models/product');
+const Item = require('../models/item');
 const Auth=require('../middleware/authware');
 
 router.get('/myShop',Auth.isLoggedIn,(req,res)=>{
@@ -50,6 +51,17 @@ router.put('/:shopID',Auth.isLoggedIn,Auth.isItYours(Shop,'shopID'),Auth.areYouA
                     newProduct.save();
                     foundShop.products.push(newProduct);
                     foundShop.save();
+                    Item.create({
+                        owner:req.user._id,
+                        product:newProduct._id,
+                        shop:foundShop._id,
+                        country:req.body.country,
+                        quantity:1
+                    },function(err,item){
+                        if(err){
+                            return res.send('error');
+                        }
+                    })
                 }
             })
             res.json(foundShop);

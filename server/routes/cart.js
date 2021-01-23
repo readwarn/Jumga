@@ -17,20 +17,13 @@ router.post('/',(req,res)=>{
 
 router.get('/:cc/myCart',Auth.isLoggedIn,(req,res)=>{
      Cart.findOne({owner:req.user._id,country:req.params.cc})
-     .populate([
+     .populate(
         {
         path:'items',
         populate:[
             {
                 path:'product',
-                populate:{
-                    path:'shop',
-                    model:'Shop'
-                }
-            },
-            {
-                path:'owner',
-                model:'User'
+                model:'Product'
             },
             {
                 path:'shop',
@@ -38,11 +31,7 @@ router.get('/:cc/myCart',Auth.isLoggedIn,(req,res)=>{
             }
         ]
         },
-        {
-        path:'shop',
-        model:'Shop'
-        }
-    ])
+    )
     .exec(function(err,foundCart){
       if(err){
           res.send('err');
@@ -52,9 +41,9 @@ router.get('/:cc/myCart',Auth.isLoggedIn,(req,res)=>{
     })
 })
 
-router.put('/:cartID/:productID',Auth.isLoggedIn, Auth.isItYours(Cart,'cartID'),(req,res)=>{
-     Cart.findById(req.params.cartID)
-    .populate([
+router.put('/:cartID/:itemID',Auth.isLoggedIn, Auth.isItYours(Cart,'cartID'),(req,res)=>{
+      Cart.findById(req.params.cartID)
+     .populate(
         {
         path:'items',
         populate:[
@@ -63,32 +52,36 @@ router.put('/:cartID/:productID',Auth.isLoggedIn, Auth.isItYours(Cart,'cartID'),
                 model:'Product'
             },
             {
-                path:'owner',
-                model:'User'
-            },
-            {
                 path:'shop',
                 model:'Shop'
             }
         ]
         },
-        {
-        path:'owner',
-        model:'User'
-        }
-       ])
+       ) 
        .exec(function(err,foundCart){
         if(err){
             return res.send('error');
         }
         else{
            //push a new item into the cart
-           Item.findOne({product:req.params.productID},function(err,foundItem){
+           // Check if the item is in the cart already
+           let found=false;
+           foundCart.items.forEach(item => {
+               if(item._id.equals(req.body._id)){
+                   found=true;
+               }
+           });
+    
+           Item.findById(req.params.itemID,function(err,foundItem){
                if(err){
                    res.send('error')
                }else{
-                   foundCart.items.push(foundItem);
-                   foundCart.save();
+                   foundItem.quantity=foundItem.quantity + req.body.quantity;
+                   foundItem.save();
+                   if(!found){
+                        foundCart.items.push(foundItem);
+                        foundCart.save();
+                   }
                    res.json(foundCart);
                }
            }) 
@@ -102,7 +95,7 @@ router.delete('/:itemID',Auth.isItYours(Item,'itemID'),(req,res)=>{
             res.send('error');
         }else{
             Cart.findOne({owner:req.user._id})
-                .populate([
+                .populate(
                     {
                     path:'items',
                     populate:[
@@ -111,23 +104,15 @@ router.delete('/:itemID',Auth.isItYours(Item,'itemID'),(req,res)=>{
                             model:'Product'
                         },
                         {
-                            path:'owner',
-                            model:'User'
-                        },
-                        {
                             path:'shop',
                             model:'Shop'
                         }
                     ]
                     },
-                    {
-                    path:'owner',
-                    model:'User'
-                    }
-                ])
+                )
                 .exec(function(err,foundCart){
                 if(err){
-                    res.send('errro');
+                    res.send('error');
                 }else{
                     foundCart.items.pop(deletedItem);
                     foundCart.save();
@@ -137,30 +122,6 @@ router.delete('/:itemID',Auth.isItYours(Item,'itemID'),(req,res)=>{
         }
     })
 });
-
-router.put('/:cartID/items',Auth.isLoggedIn,Auth.isItYours(Cart,'cartID'),(req,res)=>{
-    Item.findOne({product:req.body._id})
-     .populate([
-        {
-            path:'product',
-            model:'Product'
-          },
-          {
-             path:'shop',
-             model:'Shop'
-          }
-     ]) 
-     .exec(function(err,foundItem){
-        if(err){
-            return res.send('err');
-        }else{
-            foundItem.quantity=req.body.quantity;
-            foundItem.save();
-            res.json(foundItem);
-        }
-    })
-})
-
 
 module.exports=router;
 

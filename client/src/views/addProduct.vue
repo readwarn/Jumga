@@ -8,7 +8,7 @@
             <label for="file" class="file">
                 <img :src="product.displayPicture" alt="loader" id="bg">
                 <loader v-if="uploading && !uploaded" />
-                <div v-if="!uploading && !uploaded">
+                <div v-if="uploaded || !uploading">
                     <input type="file" name="file" id="file" @change="uploadProductImage">
                     <img src="../assets/Cloud.svg" alt="">
                     <p>click to choose image</p>
@@ -57,11 +57,11 @@ export default {
            loading:false,
            fieldsVerified:false,
            uploading:false,
-           uploaded:false,
+           uploaded:true,
            product:{
                name:'',
                delivery:100,
-               price:'',
+               price:1,
                displayPicture:'https://www.publicdomainpictures.net/pictures/30000/velka/plain-white-background.jpg',
                country:'',
                description:'',
@@ -79,6 +79,7 @@ export default {
      },
      methods:{
          verifyProductField(){
+             this.fieldsVerified=false;
              const fields=['name','delivery','price','displayPicture','country','description','qty'];
              for(let i=0;i<fields.length;i++){
                  if(this.product[fields[i]]===''){
@@ -93,9 +94,11 @@ export default {
               this.verifyProductField();
               if(this.fieldsVerified){
                      this.loading=true;
+                     this.product.price = parseFloat(this.product.price);
+                     this.product.qty   = parseInt(this.product.qty);
                      this.$http.put(`http://localhost:3000/shops/${this.$route.params.id}`,this.product)
                     .then(res=>{ 
-                    this.loading=false;       
+                    this.loading=false;     
                     this.product={
                         name:'',
                         price:'',
@@ -113,7 +116,7 @@ export default {
          uploadProductImage(e){
             const image = e.target.files[0];
             if(image.size<150000){
-                this.uploading=true;
+                this.uploading=true; this.uploaded=false;
                 const formData = new FormData();
                 formData.append('file', image);
                 formData.append('upload_preset', 'qv83yxtp');
@@ -122,7 +125,7 @@ export default {
                 body: formData,
                 })
                 .then(response => response.json())
-                .then((data) => {  
+                .then((data) => {     
                  this.product.displayPicture=data.secure_url;
                  this.error="";
                  this.uploading=false;
