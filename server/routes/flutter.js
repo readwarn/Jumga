@@ -4,7 +4,7 @@ const axios = require('axios');
 const Payment = require('../models/payment');
 const Auth =require('../middleware/authware');
 axios.defaults.withCredentials = true;
-axios.defaults.headers.common['Authorization'] = 'Bearer FLWSECK_TEST-4263709c3001ba5f553f44fb13306a63-X';
+axios.defaults.headers.common['Authorization'] = process.env.SECRET_KEY_TEST;
 
 router.get('/banks/:code',(req,res)=>{
     axios.get(`https://api.flutterwave.com/v3/banks/${req.params.code}`)
