@@ -8,13 +8,14 @@ Jumga is marketplace created for buyer and sellers of product. A seller uses the
 * Seller can edit the quantity (amount they have in stock) of previusly uploaded product by clicking on the product card
 
 ## Project setup
-To run the app locally on your computer you will need to create a mongodb connection url and also a flutterwave account. After signing up with flutterwave, navigate to your dashboard, toggle to test-mode, then click on settings then API, here you can see your account API keys, copy the secret key.
+To run the app locally on your computer you will need to create a mongodb connection url and also a flutterwave account. After signing up with flutterwave, navigate to your dashboard, toggle to test-mode, then click on settings then API, here you can see your account API keys, copy the secret key as shown below.
+### Flutterwave secret keys
+![Dashboard](https://github.com/readwarn/Jumga/blob/master/assets/flutterAPI.jpg)
 
 ### Mongobd connection url
 ![MongoDB connection](https://github.com/readwarn/Jumga/blob/master/assets/mongo-connection.png)
 
-### Flutterwave secret keys
-![Dashboard](https://github.com/readwarn/Jumga/blob/master/assets/flutterAPI.jpg)
+
 
 
 With the mongodb connection url and the flutterwave secret-keys ready, you can now clone this repo on your computer then take the following steps.
