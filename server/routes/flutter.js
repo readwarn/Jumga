@@ -66,16 +66,16 @@ router.post('/pay',Auth.isLoggedIn,(req,res)=>{
              newPayment.save();
              ref=newPayment._id.toString();
                     pay = {
-                        "tx_ref":`"ref${ref}"`,
-                        "amount":`"${req.body.amount}"`,
-                        "subaccounts":`"${req.body.subaccount}"`,
-                        "currency":`"${req.body.country}"`,
+                        "tx_ref":`ref${ref}`,
+                        "amount":`${req.body.amount}`,
+                        "subaccounts":req.body.subaccount,
+                        "currency":`${req.body.country}`,
                         "redirect_url":"https://priceless-hoover-4e3061.netlify.app/",
                         "payment_options":"card",  
                         "customer":{
-                        "email":`"${req.user.email}"`,
+                        "email":`${req.user.email}`,
                         "phonenumber":"0802344528",
-                        "name":`"${req.user.username}"`
+                        "name":`${req.user.username}`
                         },
                         "customizations":{
                         "title":"Jumga Payments",
@@ -113,11 +113,8 @@ router.post('/pay',Auth.isLoggedIn,(req,res)=>{
 })
 
 router.post('/approval/pay',(req,res)=>{
-    let pay={}; let ref=''; let payload={
-          amount:100,
-          country:'NG'
-    };
-    Payment.create({
+    let pay={}; let ref='';
+   Payment.create({
           for:'Approval',
           amount:req.body.amount,
           paidBy:req.user._id,
@@ -128,60 +125,70 @@ router.post('/approval/pay',(req,res)=>{
             return res.send('err');
         }else{
            ref=newPayment._id.toString();
+           pay = {
+                "tx_ref":`ref${ref}`,
+                "amount":`${req.body.amount}`,
+                "currency":`${req.body.country}`,
+                "redirect_url":"https://priceless-hoover-4e3061.netlify.app/",
+                "payment_options":"card",  
+                "customer":{
+                "email":`${req.user.email}`,
+                "phonenumber":"07066741302",
+                "name":`${req.user.username}`
+                },
+                "customizations":{
+                "title":"Jumga Payments",
+                "description":"Store Approval payment",
+                "logo":"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRTzdZrEq6KW91xIEdiMZYXni9GfHo9pFFIAg&usqp=CAU"
+                }
+           }  
+           axios.post('https://api.flutterwave.com/v3/payments',pay)
+           .then(response=>{
+               if(response){
+                   res.json({
+                       flutterData:response.data,
+                       ref:ref
+                   });
+               }
+               else{
+                   res.json({
+                       status:"error",
+                       message:'Error occured'
+                   });
+               }
+           })
+           .catch(err=>{
+               if(err){
+                   res.json({
+                       err:err,
+                       status:"error",
+                       message:err.message
+                   });
+               }else{
+                   res.json({
+                       status:"error",
+                       message:'Error occured'
+                   });
+               }
+           });
              
-    }
-    console.log(req.user.username);
-    const amt=200; const cc='NGN'; 
-    axios.post('https://api.flutterwave.com/v3/payments',
-    {
-        "tx_ref":"hooli-tx-1920bddddbtytty",
-        "amount":`${amt}`,
-        "currency":`${cc}`,
-        "redirect_url":"https://webhook.site/9d0b00ba-9a69-44fa-a43d-a82c33c36fdc",
-        "payment_options":"card",
-        "customer":{
-           "email":`${req.user.email}`,
-           "phonenumber":"07066741302",
-           "name":`${req.user.username}`
-        },
-        "customizations":{
-           "title":"Jumga Payments",
-           "description":"Pay your store approval fee and start enjooying Jumga seamless services",
-           "logo":"https://s2.svgbox.net/hero-outline.svg?color=219653&ic=shopping-bag"
         }
-     })
-    .then(response=>{
-        if(response){
-            res.json({
-                flutterData:response.data,
-                ref:ref
-            });
-        }
-        else{
-            res.json({
-                status:"error",
-                message:'Error occured'
-            });
-        }
-    })
-    .catch(err=>{
-        if(err){
-            res.json({
-                err:err,
-                status:"error",
-                message:err.message
-            });
-        }else{
-            res.json({
-                status:"error",
-                message:'Error occured'
-            });
-        }
-    });
-   
     })//end of payment ceation 
 
 })
 
+router.get('/verify/:paymentID',(req,res)=>{
+     axios.get(`https://api.flutterwave.com/v3/transactions/${req.params.paymentID}/verify`)
+     .then(response=>{
+           if(response){
+               res.json(response.data);
+           }
+     })
+     .catch(err=>{
+        if(err){
+            res.json(err.response.data);
+        }
+     })
+})
 
 module.exports=router;

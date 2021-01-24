@@ -5,13 +5,11 @@
           </nav>
           <p class="info">You are required to pay a token of <span>{{mid}}{{amount}}</span> for your account to be approved</p>
           <img id="banner" src="../assets/payment.svg" alt="payment">
-          <label for="email">Email</label>
-          <input  type="text" id="email" v-model="email">
           <label for="cc">Change country</label>
           <select id="cc" v-model="country" @change="calc()">
-              <option value="ng">Nigeria</option>
-              <option value="gh">Ghana</option>
-              <option value="ke">Kenya</option>
+              <option value="ngn">Nigeria</option>
+              <option value="ghs">Ghana</option>
+              <option value="kes">Kenya</option>
           </select>
           <img v-if="loading" id="load" src="https://s2.svgbox.net/loaders.svg?ic=tail-spin" height="30" width="30" alt="updating">
           <button v-if="!loading" @click="makePayment()">Proceed with payment</button>
@@ -24,40 +22,39 @@ export default {
       name:"Payment",
       data(){
           return{ 
-            country:'NG',
+            country:'NGN',
             email:'yusufmosobalaje@gmail.com',
             loading:false,
             amount:8000,
-            country:'NG',
+            country:'ngn',
             mid:'₦',
           }
       },
       methods:{
           calc(){
-              if(this.country==='ng'){
+              if(this.country==='ngn'){
                   this.amount=8000;
                   this.mid='₦';
-                  this.country='ng';
+                  this.country='ngn';
               }
-              else if(this.country==='gh'){
+              else if(this.country==='ghs'){
                   this.amount=100;
                   this.mid='₵'
-                  this.country='gh';
+                  this.country='ghs';
               }else{
                   this.amount=2200;
                   this.mid='K'
-                  this.country='ke';
+                  this.country='kes';
               }
           },
           makePayment(){
-                // wow Nigeria cuure is soooo poor
+                // wow Nigeria currency is soooo poor
                this.loading=true;
                const payment = {
-                   amount:this.amount,
-                   country:this.country,
-                   email:this.email,
+                   "amount":this.amount,
+                   "country":this.country,
+                   "email":this.email,
                }
-               console.log(payment);
               this.$http.post('http://localhost:3000/flutter/approval/pay',payment)
              .then(res=>{
                  console.log(res.data);

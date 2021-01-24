@@ -1,5 +1,5 @@
 <template>
-     <div class="market-container">
+     <div class="market-container" @click="profile=false">
           <navbar :profile="profile" @profileclick="profile=!profile" :cc="$route.params.id" :item="cart.items.length" v-if="!loading" />
           <loader v-if="loading" />
           <div class="banner" v-if="!loading">
@@ -53,12 +53,14 @@ export default {
                }else{
                     this.$http.get(`http://localhost:3000/products/${this.$route.params.id}`)
                    .then(res=>{
-                       this.products=res.data;
-                       this.$http.get(`http://localhost:3000/carts/${this.$route.params.id}/myCart`)
-                      .then(res=>{
-                          this.cart=res.data;
-                          this.loading=false;
-                      })
+                           if(res.data.length>0){
+                                 this.products=res.data;
+                                 this.$http.get(`http://localhost:3000/carts/${this.$route.params.id}/myCart`)
+                                .then(res=>{
+                                 this.cart=res.data;
+                                 this.loading=false;
+                           })
+                        }
                    })
                }
            })

@@ -48,6 +48,7 @@ export default {
             error:'',
             inCart:false,
             product:{},
+            currency:'NGN'
         }
     },
     methods:{
@@ -103,28 +104,23 @@ export default {
                  this.error='Fill the address';
                 
             }else{
-                  const cost =(this.product.price * this.units) + this.item.product.delivery;
-                  let currency='NGN';
-          if(this.$route.params.cc==='ng'){
-              currency==='NGN'
-          }else if(this.$route.params.cc==='gh'){
-              currency==='NGN'
-          }else{
-              currency==='NGN'
-          }
-            const pay={
-                amount:cost,
-                country:currency,
-                subaccount:[
+                  const cost =(this.product.price * this.units) + this.product.delivery;
+                  const sellerCharge = this.product.price * this.units * 0.975;
+                  const dispatchCharge = this.product.delivery * 0.8;
+
+         const pay={
+                "amount":cost,
+                "country":this.currency,
+                "subaccount":[
                     {
-                        id:this.item.product.shop.accountID,
-                        transaction_charge_type:"flat_subaccount",
-                        transaction_charge:`${this.item.product.price*this.units*0.975}`
+                        "id":this.product.shop.accountID,
+                        "transaction_charge_type":"flat_subaccount",
+                        "transaction_charge":sellerCharge
                     },
                     {
-                        id:'RS_BF90AF968D5DFF286579ECD2B3EB1994',
-                        transaction_charge_type:"flat_subaccount",
-                        transaction_charge:`${this.item.product.delivery*0.8}`
+                        "id":'RS_A75DF63E1A4BF2757823E93F91279AB3',
+                        "transaction_charge_type":"flat_subaccount",
+                        "transaction_charge":dispatchCharge
                     }
                 ]
             }
@@ -139,6 +135,15 @@ export default {
         }
     },
     created(){
+             // Decide currency
+            if(this.$route.params.cc==='ng'){
+                this.currency==='NGN'
+            }else if(this.$route.params.cc==='gh'){
+                this.currency==='GHS'
+            }else{
+                this.currency==='KES'
+            }
+
             this.$http.get('http://localhost:3000/auth/status')
            .then(res=>{
                if(!res.data.loggedIn){

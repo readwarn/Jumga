@@ -1,5 +1,5 @@
 <template>
-    <div class="order-box" @click="abracadabra()">
+    <div class="order-box" @click="abracadabra($event)">
             <navbar v-if="!loading"  :profile="profile" @profileclick="profile=!profile" :cc="$route.params.id" :item="cart.items.length" />
             <loader v-if="loading" />
             <div class="content" v-if="!loading && !empty && !showAddress">
@@ -78,8 +78,8 @@
                             <p v-if="address!==''">Your Order costs {{(total + delivery)}} and will be shipped to {{address}}</p>
                             <label for="address">Address</label>
                             <textarea name="add" id="address" cols="30" v-model="address" rows="10"></textarea>
-                            <p class="error">{{error}}</p>
-                            <button @click="checkout()">PAY NOW</button>
+                            <p class="error" id="err">{{error}}</p>
+                            <button @click.stop="checkout()">PAY NOW</button>
                         </div>
             </div>
     </div>
@@ -106,14 +106,20 @@ export default {
             address:'Ibadan',
             delivery:0,
             updating:false,
+            currency:'NGN',
             cart:'',
             total:0,
         }
     },
     methods:{
-         abracadabra(){
-              this.showAddress=false;
+         abracadabra(e){
+              const textarea = document.querySelector('textarea');
+              if(e.target!==textarea){
+                 this.showAddress=false;
+                 this.error='';
+              }
               this.profile=false;
+
          },
          itemRoute(item){
               return `/market/${this.$route.params.id}/items/${item.product._id.toString()}`
@@ -165,13 +171,13 @@ export default {
          },
          createSubaccount(id,charge){
                return {
-                    id:id,
-                    transaction_charge_type:"flat_subaccount",
-                    transaction_charge:charge
+                    "id":`${id}`,
+                    "transaction_charge_type":"flat_subaccount",
+                    "transaction_charge":charge
                }
          },
          checkout(){
-         if(this.address.length<50){
+         if(this.address.length<17){
               this.error='Write a proper address so we wont lose your order'
          }
          else{
@@ -181,42 +187,41 @@ export default {
                if(index===0){
                    subs.push(newSub);
                }else{
-                  if(subs.find((sub)=>{sub.id===newSub.id})){
-                      const oldsub=find((sub)=>{sub.id===item.shop.accountID});
-                      const oldIndex=subs.indexOf(oldsub);
-                      const newCharge=oldsub.transaction_charge + newSub.transaction_charge;
-                      const updatedSub = this.createSubaccount(oldsub.id, newCharge);
-                      subs.splice(oldIndex,1,updatedSub);
-                  }else{
-                      subs.push(newSub);
-                  }
+                    subs.forEach((sub,index)=>{
+                        if(sub.id===newSub.id){
+                            const newCharge=sub.transaction_charge + newSub.transaction_charge;
+                            const updatedSub = this.createSubaccount(sub.id, newCharge);
+                            subs.splice(index,1,updatedSub);
+                        }else{
+                            subs.push(newSub);
+                        }
+                    })
                }
           });
           const cost = this.total + this.delivery;
-          const dispatch = this.createSubaccount('RS_9F16F4F847387A9808A177EC80DB969F',this.delivery*0.8);
+          const dispatch = this.createSubaccount('RS_A75DF63E1A4BF2757823E93F91279AB3',this.delivery*0.8);
           subs.push(dispatch);
-          let currency='NGN';
-          if(this.$route.params.id==='ng'){
-              currency==='NGN'
-          }else if(this.$route.params.id==='gh'){
-              currency==='NGN'
-          }else{
-              currency==='NGN'
-          }
-
+         
           const pay={
-                amount:cost,
-                country:currency,
-                subaccount:subs
+                "amount":cost,
+                "country":this.currency,
+                "subaccount":subs
            }
-           this.$http.post('http://localhost:3000/flutter/pay',pay)
-          .then(res=>{
-               window.location.href = res.data.flutterData.data.link;
-          })
+            this.$http.post('http://localhost:3000/flutter/pay',pay)
+            .then(res=>{
+                window.location.href = res.data.flutterData.data.link;
+            })
          }
         },
     },
     created(){
+          if(this.$route.params.id==='ng'){
+              this.currency==='NGN'
+          }else if(this.$route.params.id==='gh'){
+              this.currency==='GHS'
+          }else{
+              this.currency==='KES'
+          }
          this.route=`/markets/${this.$route.params.id}`;
          this.$http.get('http://localhost:3000/auth/status')
            .then(res=>{
@@ -255,7 +260,7 @@ div.content{
     position: relative;
     padding-bottom:50px;
 }
-p.error{
+p.error#err{
     color: red;
 }
 div.item{
