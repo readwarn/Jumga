@@ -11,7 +11,7 @@ Jumga is marketplace created for buyer and sellers of product. A seller uses the
 To run the app locally on your computer you will need to create a mongodb connection url and also a flutterwave account. After signing up with flutterwave, navigate to your dashboard, toggle to test-mode, then click on settings then API, here you can see your account API keys, copy the secret key.
 
 ### Mongobd connection url
-![MongoDB connection](https://github.com/readwarn/Jumga/blob/master/assets/mongo-connection.jpg)
+![MongoDB connection](https://github.com/readwarn/Jumga/blob/master/assets/mongo-connection.png)
 
 ### Flutterwave secret keys
 ![Dashboard](https://github.com/readwarn/Jumga/blob/master/assets/flutterAPI.jpg)
@@ -22,7 +22,7 @@ With the mongodb connection url and the flutterwave secret-keys ready, you can n
 * clone into Jumga folder i.e type in 'cd jumga' in the command terminal
 * cd into the server folder
 * craete a .env file [touch .env]
-![Secret keys](https://github.com/readwarn/Jumga/blob/master/assets/keys.jpg)
+![Secret keys](https://github.com/readwarn/Jumga/blob/master/assets/keys.png)
 * Copy and paste your mongodb connection url and your flutterwave secret api keys
 * run 'npm install' 
 * run 'npm start'
