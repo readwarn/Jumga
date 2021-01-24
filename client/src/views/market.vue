@@ -2,8 +2,12 @@
      <div class="market-container">
           <navbar :profile="profile" @profileclick="profile=!profile" :cc="$route.params.id" :item="cart.items.length" v-if="!loading" />
           <loader v-if="loading" />
-          <div class="banner">
-                <h3>AMAZING DEALS THIS FRIDAY</h3>
+          <div class="banner" v-if="!loading">
+                 <div>
+                      <h3>AMAZING DEALS</h3>
+                      <img src="https://s2.svgbox.net/illlustrations.svg?ic=ironman" alt="hero">
+                      <h3>THIS FRIDAY.</h3>
+                 </div>
           </div>
           <div class="content" v-if="!loading">
                 <label for="search">Search for a product</label>
@@ -106,17 +110,25 @@ div.product-container{
 div.banner{
     display: flex;
     align-items: center;
-    background: url('https://s2.svgbox.net/illlustrations.svg?ic=ironman');
-    background-size: 100% 100%;
+    background-color:#E5E5E5;
     height: 25%;
-    margin-top: 65px;
+    margin-top: 67px;
     margin-bottom: 30px;
-    border: 1px solid black;
-    padding: 0 150px;
 }
 div.banner h3{
     color: #070707;
     font-size: 1.5rem;
+}
+div.banner div{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 35%;
+    height: 84%;
+    margin: auto;
+}
+div.banner div img{
+    height: 100%;
 }
 
  @media only screen and (max-width: 720px) {
@@ -124,11 +136,11 @@ div.banner h3{
         width: 98%;
     }
     div.banner{
-        border:  1px solid purple;
         background-size:80% 80%;
-        background-repeat: no-repeat;
-        background-position: 150% center;
-        padding: 0px 0px 0px 10px;
+        background-position:center;
+    }
+    div.banner div{
+        width: 75%;
     }
     div.banner h3{
     font-size: 1rem;

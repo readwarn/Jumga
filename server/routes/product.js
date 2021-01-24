@@ -78,7 +78,7 @@ router.post('/',Auth.isLoggedIn,Auth.areYouApproved,(req,res)=>{
     })
 })
 
-router.get('/:productID',(req,res)=>{
+router.get('/this/:productID',(req,res)=>{
     Product.findById(req.params.productID)
     .populate([
         {

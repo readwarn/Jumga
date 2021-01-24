@@ -1,6 +1,6 @@
 <template>
-    <div class="order-box">
-            <navbar v-if="!loading" :cc="$route.params.id" :item="cart.items.length" />
+    <div class="order-box" @click="abracadabra()">
+            <navbar v-if="!loading"  :profile="profile" @profileclick="profile=!profile" :cc="$route.params.id" :item="cart.items.length" />
             <loader v-if="loading" />
             <div class="content" v-if="!loading && !empty && !showAddress">
                 <div class="item heading">
@@ -26,30 +26,31 @@
                     <div class="item-box">
                         <img :src="item.product.displayPicture" class="avi" alt="product">
                         <div class="detail">
-                            <div class="delete" v-if="!deleting" @click="deleteItem(item)">
-                                 <p>Seller: <span>{{item.shop.name}}</span></p>
-                                 <img src="https://s2.svgbox.net/hero-outline.svg?color=red&ic=trash" height="20" width="20" alt="delete">
+                           <p>Seller: <span>{{item.shop.name}}</span></p>
+                           <div class="delete">
+                                 <router-link :to="itemRoute(item)">{{item.product.name}}</router-link>
+                                 <img src="https://s2.svgbox.net/hero-outline.svg?color=red&ic=trash" v-if="!deleting" @click="deleteItem(item)" height="20" width="20" alt="delete">
+                                 <img id="load" v-if="deleting" src="https://s2.svgbox.net/loaders.svg?color=red&ic=tail-spin" height="30" width="30" alt="updating">
                             </div>
-                            <router-link :to="itemRoute(item)">{{item.product.name}}</router-link>
-                            <img id="load" v-if="deleting" src="https://s2.svgbox.net/loaders.svg?ic=tail-spin" height="30" width="30" alt="updating">
+                            <p class="error">{{error}}</p>
                         </div>
                     </div>
                     <div class="item-tags">
                         <div class="qty field">
-                            <update-item-button width="143" :value="item.quantity" v-on:minusclick="decreaseItem(item,index)" :disable="updating" v-on:plusclick="increaseItem(item,index)" />
                             <p class="subtitle">Quantity</p>
+                            <update-item-button width="100" :value="item.quantity" v-on:minusclick="decreaseItem(item,index)" :disable="updating" v-on:plusclick="increaseItem(item,index)" />
                         </div>
                         <div class="price field">
+                             <p class="subtitle">Price</p>
                             <p>₦{{item.product.price}}</p>
-                            <p class="subtitle">Price</p>
                         </div>
                         <div class="delivery field">
-                            <p>₦{{item.product.delivery}}</p>
                             <p class="subtitle">Delivery</p>
+                            <p>₦{{item.product.delivery}}</p>
                         </div>
                         <div class="subtotal field">
-                            <p>₦{{(item.product.delivery)+(item.product.price*item.quantity)}}</p>
                             <p class="subtitle">Subtotal</p>
+                            <p>₦{{(item.product.delivery)+(item.product.price*item.quantity)}}</p>
                         </div>
                     </div>
                 </div>
@@ -61,7 +62,7 @@
                          <router-link :to="route">
                              <button class="a">CONTINUE SHOPPING</button>
                          </router-link>
-                         <button class="b" @click="showAddress=true">CHECKOUT</button>
+                         <button class="b" @click.stop="showAddress=true">CHECKOUT</button>
                 </div>
             </div>
              <div class="emptyCart" v-if="empty">
@@ -77,7 +78,8 @@
                             <p v-if="address!==''">Your Order costs {{(total + delivery)}} and will be shipped to {{address}}</p>
                             <label for="address">Address</label>
                             <textarea name="add" id="address" cols="30" v-model="address" rows="10"></textarea>
-                            <button @click="checkout()" >PAY NOW</button>
+                            <p class="error">{{error}}</p>
+                            <button @click="checkout()">PAY NOW</button>
                         </div>
             </div>
     </div>
@@ -93,13 +95,15 @@ export default {
     data(){
         return{
             route:'markets/ng',
+            profile:false,
+            increment:1,
+            error:'',
             empty:false,
             loading:true,
             updating:false,
             showAddress:false,
             deleting:false,
             address:'Ibadan',
-            units:1,
             delivery:0,
             updating:false,
             cart:'',
@@ -107,35 +111,45 @@ export default {
         }
     },
     methods:{
+         abracadabra(){
+              this.showAddress=false;
+              this.profile=false;
+         },
          itemRoute(item){
-              return `/market/${this.$route.params.id}/products/${item._id.toString()}`
+              return `/market/${this.$route.params.id}/items/${item.product._id.toString()}`
          },
          decreaseItem(item,index){
-             console.log('decreasing');
-             if(this.units===1){
+             if(item.quantity===1){
                 this.error='You really want to order 0 item? lol';
             }else{
-                this.units-=1;
+                this.increment=-1;
                 this.updateItem(item,index);
                 this.error='';
             }
          },
          increaseItem(item,index){
-            if(this.units===item.product.qty){
+            if(item.quantity===item.product.qty){
                this.error='Not enough product from seller';
             }else{
-                this.units+=1;
+                this.increment=1;
                 this.updateItem(item,index);
                 this.error='';
              }
          },
          updateItem(item,index){
-                  console.log(this.units);
                   this.updating=true;
-                  this.$http.put(`http://localhost:3000/items/${item._id}`)
+                  this.$http.put(`http://localhost:3000/items/${item._id}`,{
+                      increment:this.increment
+                  })
                  .then(res=>{
                     this.updating=false;
                     this.cart.items.splice(index,1,res.data);
+                    this.total=0;
+                    this.delivery=0;
+                    this.cart.items.forEach(item => {
+                        this.total+=((item.product.price * item.quantity) + item.product.delivery);
+                        this.delivery+=item.product.delivery;
+                    });
                 })
          },
          deleteItem(item){
@@ -145,7 +159,7 @@ export default {
                  this.deleting=false;
                  this.cart=res.data;
                   if(this.cart.items.length===0){
-                           this.empty=true;
+                      this.empty=true;
                   }
             })
          },
@@ -211,7 +225,6 @@ export default {
                }else{
                    this.$http.get(`http://localhost:3000/carts/${this.$route.params.id}/myCart`)
                   .then(res=>{
-                       console.log(res.data);
                        this.loading=false;
                        this.cart=res.data;
                        if(this.cart.items.length===0){
@@ -242,7 +255,9 @@ div.content{
     position: relative;
     padding-bottom:50px;
 }
-
+p.error{
+    color: red;
+}
 div.item{
     display: flex;
     flex-wrap: wrap;
@@ -291,6 +306,7 @@ div.detail a{
     display: block;
     font-size: 1rem;
     color: black;
+    margin-right:15px;
 }
 div.detail a:hover{
     color: #219653;
@@ -299,7 +315,7 @@ div.delete{
     display: flex;
     align-items: center;
     cursor: pointer;
-    margin-bottom:14px;
+    margin-top:24px;
     width: 100%;
 }
 
@@ -310,10 +326,10 @@ div.delete:hover{
 div.field{
     display: flex;
     justify-content: center;
+    align-items: center;
     font-size: 1.5rem;
     font-weight: 700;
     color: black;
-    padding-top:15px;
     width: 25%;
 }
 div.field.heading{
@@ -328,13 +344,8 @@ div.item-tags{
     flex-wrap: wrap;
     width: 55%;
 }
-div.qty input{
-    height: 40px;
-    width: 60%;
-    padding: 10px;
-    display: block;
-    margin: 10px auto 0px auto;
-}
+
+
 div.total{
     display: flex;
     align-items: center;
@@ -439,6 +450,10 @@ div.emptyCart img{
     display: block;
     margin: auto;
 }
+
+div.emptyCart h3{
+    margin: 20px 0px;
+}
 @media only screen and (max-width: 720px) {
 nav{
     padding: 10px 15px;
@@ -458,21 +473,24 @@ div.item-box{
 div.field{
     padding-top: 0px;
     flex-direction: column;
-    justify-content: flex-end;
+    justify-content: center;
     padding: 10px;
     font-size: 1rem;
     text-align: center;
 }
-
-div.qty input{
-    width: 80%;
+div.field{
+    width: 33.33%;
+}
+div.qty.field{
+    width: 100%;
 }
 p.subtitle{
     display: block;
     font-size: 0.8rem;
     font-weight: 400;
-    margin-top: 5px;
+    margin-bottom:10px;
 }
+
 div.total button,div.total a{
     width: 33%;
 }

@@ -12,10 +12,7 @@ router.put('/:itemID',Auth.isLoggedIn,Auth.isItYours(Item,'itemID'),(req,res)=>{
     .populate([
         {
           path:'product',
-          populate:{
-            path:'shop',
-            model:'Shop'
-           }
+          model:'Product'
         },
         {
            path:'shop',
@@ -26,7 +23,7 @@ router.put('/:itemID',Auth.isLoggedIn,Auth.isItYours(Item,'itemID'),(req,res)=>{
        if(err){
            return res.send('error');
        }else{
-           uptadedItem.quantity=uptadedItem.quantity + req.body.quantity;
+           uptadedItem.quantity=uptadedItem.quantity + req.body.increment;
            uptadedItem.save();
            res.json(uptadedItem);
        }

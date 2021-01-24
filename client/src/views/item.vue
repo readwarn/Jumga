@@ -4,26 +4,26 @@
          <loader v-if="loading" />
          <div class="content"  v-if="!loading">
                <div class="product-container">
-                      <img :src="item.product.displayPicture" alt="product">
+                      <img :src="product.displayPicture" alt="product">
                       <div class="details">
-                          <h4>{{item.product.name}}</h4>
-                          <p class="price">₦{{item.product.price}}</p>
-                          <p class="del">Delivery fee ₦{{item.product.delivery}}</p>
+                          <h4>{{product.name}}</h4>
+                          <p class="price">₦{{product.price}}</p>
+                          <p class="del">Delivery fee ₦{{product.delivery}}</p>
                           <label id="mb" for="qty">Units</label>
                           <update-item-button :value="units" :width="50" v-on:minusclick="decreaseItem()" :disable="updating" v-on:plusclick="increaseItem()" />
                           <p class="error">{{error}}</p>
                           <label for="address">Address</label>
                           <textarea id="address" cols="30" rows="6" v-model="address"></textarea>
                           <div class="input-box">
-                              <button @click="updateCart()" v-if="!carting">ADD TO CART</button>
+                              <button @click="addToCart()" v-if="!carting">ADD TO CART</button>
                               <img v-if="buying || carting" id="load" src="https://s2.svgbox.net/loaders.svg?ic=tail-spin" height="30" width="30" alt="updating">
                               <button v-if="!buying" @click="buynow()">BUY NOW</button>
                           </div>
-                          <p>Sold by <span id="seller">{{item.product.shop.name}}</span></p>
+                          <p>Sold by <span id="seller">{{product.shop.name}}</span></p>
                       </div>
             </div>
             <p class="title">Product Description</p>
-            <p>{{item.product.description}}</p>
+            <p>{{product.description}}</p>
          </div>
      </div>
 </template>
@@ -43,19 +43,19 @@ export default {
             updating:false,
             carting:false,
             cart:'',
+            item:'',
             buying:false,
             error:'',
-            item:{quantity:1},
+            inCart:false,
+            product:{},
         }
     },
     methods:{
         increaseItem(){
-            if(this.units===this.item.product.qty){
+            if(this.units===this.product.qty){
                this.error='Not enough product from seller';
             }else{
                 this.units+=1;
-                this.updateItem();
-                this.error='';
             }
         },
         decreaseItem(){
@@ -63,35 +63,47 @@ export default {
                 this.error='You want to order 0 item? lol';
             }else{
                 this.units-=1;
-                this.updateItem();
-                this.error='';
             }
-        },
-        updateItem(){
-            this.updating=true;
-            this.$http.put(`http://localhost:3000/items/${this.item._id}`,{quantity:this.units})
-            .then(res=>{
-                this.updating=false;
-                this.item=res.data;
-            }) 
         },
         updateCart(){
                this.carting=true;
-               console.log(this.cart);
-               console.log(this.item);
-               this.$http.put(`http://localhost:3000/carts/${this.cart._id}/${this.item._id}`,this.item)
+               this.$http.put(`http://localhost:3000/carts/${this.cart._id}`,{
+                   product:this.product,
+                   increment:this.units
+               })
               .then(res=>{
-                  console.log(res.data);
                   this.carting=false;
-                  this.$router.push(`/cart/${this.item.product.country}`); 
+                  console.log(res.data);
               })
+        },
+        addToCart(){
+             this.cart.items.forEach(item => {
+                 if(item.product._id.toString()===this.product._id.toString()){
+                         this.$http.put(`http://localhost:3000/items/${item._id}`,{
+                         increment:this.units
+                  })
+                 .then(res=>{
+                     console.log(res.data);
+                     this.$router.push(`/cart/${this.$route.params.cc}`);
+                     return;
+                 })
+                 }
+             });
+             this.$http.put(`http://localhost/carts/${this.cart._id}`,{
+                 product:this.product,
+                 increment:this.units
+             })
+             .then(res=>{
+                 this.cart=res.data;
+                 this.$router.push(`/cart/${this.$route.params.cc}`)
+             })
         },
         buynow(){
             if(this.address===''){
                  this.error='Fill the address';
                 
             }else{
-                  const cost =(this.item.product.price * this.units) + this.item.product.delivery;
+                  const cost =(this.product.price * this.units) + this.item.product.delivery;
                   let currency='NGN';
           if(this.$route.params.cc==='ng'){
               currency==='NGN'
@@ -132,13 +144,12 @@ export default {
                if(!res.data.loggedIn){
                  this.$router.push('/buyer/login');
                }else{ 
-                  this.$http.get(`http://localhost:3000/items/${this.$route.params.id}`)
+                  this.$http.get(`http://localhost:3000/products/this/${this.$route.params.id}`)
                   .then(res=>{
-                      this.item=res.data;
+                      this.product=res.data;
                        this.$http.get(`http://localhost:3000/carts/${this.$route.params.cc}/myCart`)
                       .then(res=>{
                           this.cart=res.data;
-                          console.log(this.cart.items.length);
                           this.loading=false;
                       })
                   })

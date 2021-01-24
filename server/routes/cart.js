@@ -3,6 +3,7 @@ const router=express.Router();
 const Cart=require('../models/cart');
 const Item=require('../models/item');
 const Auth = require('../middleware/authware');
+const item = require('../models/item');
 
 
 router.post('/',(req,res)=>{
@@ -16,7 +17,7 @@ router.post('/',(req,res)=>{
 
 
 router.get('/:cc/myCart',Auth.isLoggedIn,(req,res)=>{
-     Cart.findOne({owner:req.user._id,country:req.params.cc})
+      Cart.findOne({owner:req.user._id,country:req.params.cc})
      .populate(
         {
         path:'items',
@@ -41,10 +42,10 @@ router.get('/:cc/myCart',Auth.isLoggedIn,(req,res)=>{
     })
 })
 
-router.put('/:cartID/:itemID',Auth.isLoggedIn, Auth.isItYours(Cart,'cartID'),(req,res)=>{
-      Cart.findById(req.params.cartID)
-     .populate(
-        {
+router.put('/:cartID',Auth.isLoggedIn, Auth.isItYours(Cart,'cartID'),(req,res)=>{
+       Cart.findById(req.params.cartID)
+      .populate(
+       {
         path:'items',
         populate:[
             {
@@ -57,34 +58,27 @@ router.put('/:cartID/:itemID',Auth.isLoggedIn, Auth.isItYours(Cart,'cartID'),(re
             }
         ]
         },
-       ) 
+        ) 
        .exec(function(err,foundCart){
         if(err){
             return res.send('error');
         }
         else{
-           //push a new item into the cart
-           // Check if the item is in the cart already
-           let found=false;
-           foundCart.items.forEach(item => {
-               if(item._id.equals(req.body._id)){
-                   found=true;
-               }
-           });
-    
-           Item.findById(req.params.itemID,function(err,foundItem){
-               if(err){
-                   res.send('error')
-               }else{
-                   foundItem.quantity=foundItem.quantity + req.body.quantity;
-                   foundItem.save();
-                   if(!found){
-                        foundCart.items.push(foundItem);
-                        foundCart.save();
-                   }
-                   res.json(foundCart);
-               }
-           }) 
+            Item.create({
+                owner:req.user._id,
+                product:req.body.product._id,
+                shop:req.body.product.shop._id,
+                country:req.body.product.country,
+                quantity:req.body.increment
+            },function(err,newItem){
+                if(err){
+                    return res.send('error');
+                }else{
+                    foundCart.items.push(newItem);
+                    foundCart.save();
+                    return res.json(foundCart);
+                }
+            })
         }
     })
 })
