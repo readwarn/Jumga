@@ -17,13 +17,13 @@ To run the app locally on your computer you will need to create a mongodb connec
 ![Dashboard](https://github.com/readwarn/Jumga/blob/master/assets/flutterAPI.jpg)
 
 
-With the mongodb connection url and the flutterwave secret-keys ready, you can now clone this repo on your computer the follow the following steps.
+With the mongodb connection url and the flutterwave secret-keys ready, you can now clone this repo on your computer then take the following steps.
 
-* clone into Jumga folder i.e type in 'cd jumga' in the command terminal
+* cd into Jumga folder i.e type in 'cd jumga' in the command terminal
 * cd into the server folder
-* craete a .env file [touch .env]
+* create a .env file. You can use this command [touch .env]
+* Copy and paste your mongodb connection url and your flutterwave secret api keys as shown below.
 ![Secret keys](https://github.com/readwarn/Jumga/blob/master/assets/keys.png)
-* Copy and paste your mongodb connection url and your flutterwave secret api keys
 * run 'npm install' 
 * run 'npm start'
 * cd into the client directory and run 'npm install' then run 'npm run serve'
