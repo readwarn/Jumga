@@ -70,7 +70,7 @@ router.post('/pay',Auth.isLoggedIn,(req,res)=>{
                         "amount":`${req.body.amount}`,
                         "subaccounts":req.body.subaccount,
                         "currency":`${req.body.country}`,
-                        "redirect_url":"https://priceless-hoover-4e3061.netlify.app/",
+                        "redirect_url":"https://lucid-raman-7e7290.netlify.app/",
                         "payment_options":"card",  
                         "customer":{
                         "email":`${req.user.email}`,
@@ -177,18 +177,6 @@ router.post('/approval/pay',(req,res)=>{
 
 })
 
-router.get('/verify/:paymentID',(req,res)=>{
-     axios.get(`https://api.flutterwave.com/v3/transactions/${req.params.paymentID}/verify`)
-     .then(response=>{
-           if(response){
-               res.json(response.data);
-           }
-     })
-     .catch(err=>{
-        if(err){
-            res.json(err.response.data);
-        }
-     })
-})
+
 
 module.exports=router;

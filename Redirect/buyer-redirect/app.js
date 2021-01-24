@@ -14,7 +14,7 @@ const app = new Vue({
             axios.get(`http://localhost:3001/flutter/verify/${paymentID}`)
             .then(res=>{
                 if(res.data.status==="success"){
-                     this.amount=res.data.data.amount;
+                    this.amount=res.data.data.amount;
                     if(res.data.data.charged_amount<this.amount){
                          this.error=`You paid ${res.data.data.charged_amount} instead of ${this.amount}`
                          this.verifying=false;

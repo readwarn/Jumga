@@ -18,17 +18,17 @@
             <a href="http://localhost:8080"><h3>Jumga</h3></a>
         </nav>
         <div class="success feedback" v-if="!failure && !verifying">
-            <p class="info">Your Store has been approved and a dispatch rider has been assigned to you.</p>
+            <p class="info">Your payment was succesful and your order will be shipped soon.</p>
             <img src="dispatch.svg" alt="ok">
-            <a href="http://localhost:8080/shops/myShop">
-                <button>Proceed to dashboard</button>
+            <a href="http://localhost:8080/markets">
+                <button>Proceed to marketplace</button>
             </a>
         </div>
         <div class="failure feedback" v-if="failure && !verifying">
             <p class="info">{{error}}</p>
             <img src="https://s2.svgbox.net/illlustrations.svg?ic=pirahna" alt="failed">
-            <a href="http://localhost:8080/shops/myShop">
-                <button>Proceed to dashboard</button>
+            <a href="http://localhost:8080/markets">
+                <button>Proceed to marketplace</button>
             </a>
         </div> 
  </div>
