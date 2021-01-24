@@ -7,7 +7,7 @@ Jumga is marketplace created for buyer and sellers of product. A seller uses the
 * Seller cant upload product to marketplace until the store is approved by paying $20
 * Seller can edit the quantity (amount they have in stock) of previusly uploaded product by clicking on the product card
 * Payments are accepted through [flutterwave standard v3 api ](https://developer.flutterwave.com/docs/flutterwave-standard)
-* To share payments accordingly between Jumga owners, seller and disapatch riders, [subaccount](https://developer.flutterwave.com/docs/flutterwave-standard) was created for each
+* To share payments accordingly between Jumga owners, seller and disapatch riders, [subaccount](https://developer.flutterwave.com/docs/split-payment) was created for each
 
 ## Project setup
 To run the app locally on your computer you will need to create a mongodb connection url and also a flutterwave account. After signing up with flutterwave, navigate to your dashboard, toggle to test-mode, then click on settings then API, here you can see your account API keys, copy the secret key as shown below.
