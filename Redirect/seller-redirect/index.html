@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js" integrity="sha512-bZS47S7sPOxkjU/4Bt0zrhEtWx0y0CRkhEp8IckzK+ltifIIE9EMIMTuT/mEzoIMewUINruDBIR/jJnbguonqQ==" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+    <title>Jumga</title>
+</head>
+<body>
+    <div class="approval-container" id="app">
+        <div class="loader" v-if="verifying">
+            <img src="https://s2.svgbox.net/loaders.svg?ic=elastic-spinner" width="38" height="38" alt="loading">
+            <p>Verifying payment</p>
+        </div>
+        <nav> 
+            <a href="http://localhost:8080"><h3>Jumga</h3></a>
+        </nav>
+        <div class="success feedback" v-if="!failure && !verifying">
+            <p class="info">Your Store has been approved and a dispatch rider has been assigned to you.</p>
+            <img src="dispatch.svg" alt="ok">
+            <a href="http://localhost:8080/shops/myShop" v-if="false">
+                <button>Proceed to dashboard</button>
+            </a>
+        </div>
+        <div class="failure feedback" v-if="failure && !verifying">
+            <p class="info">{{error}}</p>
+            <img src="https://s2.svgbox.net/illlustrations.svg?ic=pirahna" alt="failed">
+            <a href="http://localhost:8080/shops/myShop" v-if="false">
+                <button>Proceed to dashboard</button>
+            </a>
+        </div> 
+ </div>
+ <script src="app.js"></script>
+</body>
+</html>
