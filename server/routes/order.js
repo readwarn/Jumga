@@ -3,35 +3,18 @@ const router=express.Router();
 const Order=require('../models/order');
 const Auth = require('../middleware/authware')
 
-router.post('/',Auth.isLoggedIn,(req,res)=>{
-    Order.create(req.body,function(err,newOrder){
-        if(err){
-            res.send('erorr');
-        }else{
-            newOrder.owner=req.user._id;
-            newOrder.save();
-            res.json(newOrder);
-        }
-    });
-    req.body.cart.items.foreach(item=>{
-        item.product.qty=item.product.qty - item.quantity;
-        item.product.save();
-    })
-
-})
-
 router.get('/:cc/myOrder',Auth.isLoggedIn,(req,res)=>{
     Order.find({
         country:req.params.cc,
         owner:req.user._id
     })
     .populate({
-        path:'cart',
+        path:'products',
         populate:{
-            path:'items',
+            path:'id',
             populate:{
-                path:'product',
-                model:'User'
+                path:'shop',
+                model:'Shop'
             }
         }
     })
@@ -44,7 +27,7 @@ router.get('/:cc/myOrder',Auth.isLoggedIn,(req,res)=>{
     })
 })
 
-router.delete('/:orderID',Auth.isItYours(Order,'orderID'),(req,res)=>{
+router.delete('/:orderID',Auth.isLoggedIn,Auth.isItYours(Order,'orderID'),(req,res)=>{
     Order.findByIdAndDelete(req.params.orderID,function(err,deletedOrder){
         if(err){
             return res.send('error');
@@ -54,6 +37,38 @@ router.delete('/:orderID',Auth.isItYours(Order,'orderID'),(req,res)=>{
     })
 })
 
+router.put('/:orderID',Auth.isLoggedIn,Auth.isItYours(Order,'orderID'),(req,res)=>{
+    Order.findById(req.params.orderID)
+    .populate({
+        path:'products',
+        populate:{
+            path:'id',
+            populate:{
+                path:'shop',
+                model:'Shop'
+            }
+        }
+    })
+    .exec(function(err,order){
+        if(err){
+            return res.send('error');
+        }else{
+            order.status='Paid';
+            let shopids=[];
+            order.products.forEach((product,index) => {
+                shopids.push(product.id.shop._id.toString());
+                product.id.shop.balance+= product.id.price * product.quantity * 0.975;
+                if(index===0 || !shopids.includes(product.id.shop._id.toString())){
+                    product.id.shop.save();
+                }
+                product.id.qty=product.id.qty - product.quantity;
+                product.id.save();
+                order.save();
+                res.json(order);
+            });
+        }  
+    })
+})
 
 
 module.exports=router;

@@ -5,17 +5,20 @@
              Jumga
          </h3>
      </nav>
-     <div class="content">
-        <div v-if="showaddProduct" class="addProduct">
+       <div v-if="showaddProduct" class="addProduct">
             <div>
-                <h4>Add More!!!</h4>
+                <div class="decide">
+                     <img src="https://s2.svgbox.net/hero-outline.svg?ic=x" height="40" width="40" alt="cancel" @click.stop="showaddProduct=false">
+                     <h4>Add More!!!</h4>
+                </div>
                 <input type="number" :min="qty" v-model="qty">
                 <img v-if="updating" src="https://s2.svgbox.net/loaders.svg?ic=tail-spin" height="30" width="30" alt="updating">
                 <button v-if="!updating" @click="updateProduct()">UPDATE</button>
             </div>
         </div>
-        <loader v-if="gettingShop" bg='white'/>
-        <div class="banner"  v-if="!gettingShop && !showaddProduct">
+        <loader v-if="gettingShop"/>
+        <div class="content" v-if="!gettingShop && !showaddProduct">
+        <div class="banner">
             <div class="detail">
                <h2 class="title">{{shop.name}}</h2>
                <p class="subtitle">
@@ -40,7 +43,7 @@
            
      </div>
      <div class="product-container" v-if="!gettingShop && !showaddProduct">
-         <product v-for="(product,index) in shop.products" :key="index" v-on:productclick="hold(index,product)" :qty="product.qty" :name="product.name" :price="product.price"/>
+         <product v-for="(product,index) in shop.products" :key="index" :avi="product.displayPicture" v-on:productclick="hold(index,product)" :qty="product.qty" :name="product.name" :price="product.price"/>
      </div>
      </div>
     
@@ -102,7 +105,7 @@ export default {
                      this.gettingShop=false;
                      this.shop=res.data;
                      console.log(this.shop);
-                     this.addProductRoute=`/newProduct/${this.shop._id}`;
+                     this.addProductRoute=`/newProduct/${this.$route.params.cc}/${this.shop._id}`;
                  })
              }else{
                 this.$router.push('/seller/login');
@@ -135,6 +138,12 @@ h3{
     color: #005B94;
     font-size: 2rem;
     line-height: 130%;
+}
+div.addProduct div.decide{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
 }
 div.content{
     width: 60%;
@@ -221,13 +230,18 @@ div.addProduct{
     display: flex;
     justify-content: center;
     align-items: center;
-    border: 1px solid red;
     position: fixed;
     top: 0;
     left: 0;
 }
-div.addProduct div{
-    width: 33%;
+div.addProduct input{
+    height: 40px;
+    width: 100%;
+    padding: 10px;
+    margin: 20px 0px;
+}
+div.addProduct div:nth-child(1){
+    width: 70%;
     padding: 10px;
 }
 div.product h4{

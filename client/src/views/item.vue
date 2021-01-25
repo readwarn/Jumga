@@ -46,7 +46,6 @@ export default {
             item:'',
             buying:false,
             error:'',
-            inCart:false,
             product:{},
             currency:'NGN'
         }
@@ -73,35 +72,39 @@ export default {
                    increment:this.units
                })
               .then(res=>{
-                  this.carting=false;
                   console.log(res.data);
+                  this.carting=false;
+                  console.log('adding');
+                  this.$router.push(`/cart/${this.$route.params.cc}`);
               })
         },
+        updateItem(item){
+             this.carting=true;
+             this.$http.put(`http://localhost:3000/items/${item._id}`,{increment:this.units})
+            .then(res=>{
+                console.log('updating');
+                this.carting=false;  
+                this.$router.push(`/cart/${this.$route.params.cc}`);
+            })     
+        },
+        inCart(product,cart){
+            cart.items.forEach(item => {
+                if(item.product._id.toString()===product._id.toString()){
+                    this.item=item;
+                    return;
+                }
+            })
+        },
         addToCart(){
-             this.cart.items.forEach(item => {
-                 if(item.product._id.toString()===this.product._id.toString()){
-                         this.$http.put(`http://localhost:3000/items/${item._id}`,{
-                         increment:this.units
-                  })
-                 .then(res=>{
-                     console.log(res.data);
-                     this.$router.push(`/cart/${this.$route.params.cc}`);
-                     return;
-                 })
-                 }
-             });
-             this.$http.put(`http://localhost/carts/${this.cart._id}`,{
-                 product:this.product,
-                 increment:this.units
-             })
-             .then(res=>{
-                 this.cart=res.data;
-                 this.$router.push(`/cart/${this.$route.params.cc}`)
-             })
+              if(this.item===''){
+                  this.updateCart()
+              }else{
+                  this.updateItem(this.item);
+              }
         },
         buynow(){
-            if(this.address===''){
-                 this.error='Fill the address';
+            if(this.address.length<18){
+                 this.error='Fill the address a proper address so we wont lose your order';
                 
             }else{
                   const cost =(this.product.price * this.units) + this.product.delivery;
@@ -111,6 +114,11 @@ export default {
          const pay={
                 "amount":cost,
                 "country":this.currency,
+                "address":this.address,
+                "products":[{
+                    id:this.product._id,
+                    quantity:this.units
+                }],
                 "subaccount":[
                     {
                         "id":this.product.shop.accountID,
@@ -127,9 +135,12 @@ export default {
             this.buying=true;
             this.$http.post('http://localhost:3000/flutter/pay',pay)
             .then(res=>{
-                this.buying=false;
-                window.location.href = (res.data.flutterData.data.link);
-                console.log(res.data);
+                if(res.data.status==="success"){
+                    window.location.href = res.data.data.link;
+                }else{
+                    this.error = 'error making payment';
+                    this.buying=false;
+                }
             })
             }
         }
@@ -145,7 +156,7 @@ export default {
             }
 
             this.$http.get('http://localhost:3000/auth/status')
-           .then(res=>{
+            .then(res=>{
                if(!res.data.loggedIn){
                  this.$router.push('/buyer/login');
                }else{ 
@@ -155,6 +166,7 @@ export default {
                        this.$http.get(`http://localhost:3000/carts/${this.$route.params.cc}/myCart`)
                       .then(res=>{
                           this.cart=res.data;
+                          this.inCart(this.product,this.cart);
                           this.loading=false;
                       })
                   })

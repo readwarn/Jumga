@@ -59,7 +59,7 @@ router.put('/:shopID',Auth.isLoggedIn,Auth.isItYours(Shop,'shopID'),Auth.areYouA
 })
 
 router.put('/:shopID/approve',Auth.isLoggedIn,Auth.isItYours(Shop,'shopID'),(req,res)=>{
-    Shop.findById(req.params.shopID)
+    Shop.findOne({owner:req.user._id})
     .populate([
         {
           path:'product',

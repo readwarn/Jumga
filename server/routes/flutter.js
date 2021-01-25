@@ -1,7 +1,7 @@
 const express=require('express');
 const router=express.Router();
 const axios = require('axios');
-const Payment = require('../models/payment');
+const Order = require('../models/order');
 const Auth =require('../middleware/authware');
 axios.defaults.withCredentials = true;
 axios.defaults.headers.common['Authorization'] = process.env.SECRET_KEY_TEST;
@@ -18,12 +18,26 @@ router.get('/banks/:code',(req,res)=>{
 
 router.post('/accounts/verify',(req,res)=>{     
     axios.post('https://api.flutterwave.com/v3/accounts/resolve',req.body)
-    .then(response=>{
-        res.json(response.data);
+   .then(response=>{
+        if(response){
+            res.json(response.data);
+        }else{
+            res.json({
+                status:"error",
+                message:'error no response'
+            });
+        }
     })
-    .catch(err=>{
-        res.json(err.message);
-    })
+    .catch((error) => {
+        if(error.response){
+            res.json(error.response.data);
+        }else{
+            res.json({
+                status:"error",
+                message:'erorr occured'
+            });
+        }
+    });
 })
 
 router.post('/subaccounts',(req,res)=>{
@@ -34,17 +48,17 @@ router.post('/subaccounts',(req,res)=>{
         }else{
             res.json({
                 status:"error",
-                message:'error no reponse'
+                message:'error no response'
             });
         }
     })
     .catch((error) => {
-        if(error){
+        if(error.response){
             res.json(error.response.data);
         }else{
             res.json({
                 status:"error",
-                message:'erorr no erorr message'
+                message:'erorr occured'
             });
         }
     });
@@ -52,21 +66,21 @@ router.post('/subaccounts',(req,res)=>{
 
 router.post('/pay',Auth.isLoggedIn,(req,res)=>{
     let pay={}; let ref='';
-    Payment.create({
-            for:"Order",
-            amount:req.body.amount,
-            paidBy:req.user._id,
-            date:Date.now()
+    Order.create({
+            products:req.body.products,
+            owner:req.user._id,
+            date:Date.now(),
+            status:'Unpaid',
+            address:req.body.address,
+            country:req.body.country
          }
-        ,function(err,newPayment){
+        ,function(err,newOrder){
          if(err){
              return res.send('error');
          }else{
-             newPayment.paidBy=req.user._id;
-             newPayment.save();
-             ref=newPayment._id.toString();
+             ref=newOrder._id.toString();
                     pay = {
-                        "tx_ref":`ref${ref}`,
+                        "tx_ref":`${ref}`,
                         "amount":`${req.body.amount}`,
                         "subaccounts":req.body.subaccount,
                         "currency":`${req.body.country}`,
@@ -87,10 +101,7 @@ router.post('/pay',Auth.isLoggedIn,(req,res)=>{
                  axios.post('https://api.flutterwave.com/v3/payments',pay)
                 .then(response=>{
                     if(response){
-                        res.json({
-                            flutterData:response.data,
-                            ref:ref
-                        });
+                        res.json(response.data);
                     }else{
                         res.json({
                             status:"error",
@@ -99,8 +110,8 @@ router.post('/pay',Auth.isLoggedIn,(req,res)=>{
                     }
                 })
                 .catch(err=>{
-                    if(err){
-                        res.json(err.message);
+                    if(err.response){
+                        res.json(err.response.data);
                     }else{
                         res.json({
                             status:"error",
@@ -112,27 +123,17 @@ router.post('/pay',Auth.isLoggedIn,(req,res)=>{
     }) //end of payment creation
 })
 
-router.post('/approval/pay',(req,res)=>{
-    let pay={}; let ref='';
-   Payment.create({
-          for:'Approval',
-          amount:req.body.amount,
-          paidBy:req.user._id,
-          date:Date.now()
-        }
-        ,function(err,newPayment){
-        if(err){
-            return res.send('err');
-        }else{
-           ref=newPayment._id.toString();
+router.post('/approval/:shopID',(req,res)=>{
+           let pay={}; let ref='';
+           ref=req.params.shopID;
            pay = {
-                "tx_ref":`ref${ref}`,
+                "tx_ref":`${ref}`,
                 "amount":`${req.body.amount}`,
                 "currency":`${req.body.country}`,
                 "redirect_url":"https://priceless-hoover-4e3061.netlify.app/",
                 "payment_options":"card",  
                 "customer":{
-                "email":`${req.user.email}`,
+                "email":`${req.body.email}`,
                 "phonenumber":"07066741302",
                 "name":`${req.user.username}`
                 },
@@ -141,42 +142,43 @@ router.post('/approval/pay',(req,res)=>{
                 "description":"Store Approval payment",
                 "logo":"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRTzdZrEq6KW91xIEdiMZYXni9GfHo9pFFIAg&usqp=CAU"
                 }
-           }  
-           axios.post('https://api.flutterwave.com/v3/payments',pay)
+           }
+            axios.post('https://api.flutterwave.com/v3/payments',pay)
            .then(response=>{
                if(response){
-                   res.json({
-                       flutterData:response.data,
-                       ref:ref
-                   });
+                   res.json(response.data);
                }
                else{
                    res.json({
                        status:"error",
-                       message:'Error occured'
+                       message:'error occured'
                    });
                }
            })
            .catch(err=>{
-               if(err){
-                   res.json({
-                       err:err,
-                       status:"error",
-                       message:err.message
-                   });
+               if(err.response){
+                   res.json(err.response.data);
                }else{
                    res.json({
                        status:"error",
-                       message:'Error occured'
+                       message:'error occured'
                    });
                }
-           });
-             
-        }
-    })//end of payment ceation 
-
+           }); 
 })
 
-
+router.get('/verify/:paymentID',(req,res)=>{
+    axios.get(`https://api.flutterwave.com/v3/transactions/${req.params.paymentID}/verify`)
+    .then(response=>{
+          if(response){
+              res.json(response.data);
+          }
+    })
+    .catch(err=>{
+       if(err){
+           res.json(err.response.data);
+       }
+    })
+})
 
 module.exports=router;

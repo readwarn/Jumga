@@ -1,13 +1,21 @@
 const mongoose=require('mongoose');
 const Schema=mongoose.Schema;
 const orderSchema=new Schema({
-    cart:{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:'Cart'
-    },
+    products:[
+    {
+         id:{
+            type:mongoose.Schema.Types.ObjectId,
+            ref:'Product'
+         },
+         quantity:Number
+    }
+    ],
     date:Date,
-    open:Boolean,
     status:String,
+    delivered:{
+        type:Boolean,
+        default:false
+    },
     owner:{
         type:mongoose.Schema.Types.ObjectId,
         ref:'User'

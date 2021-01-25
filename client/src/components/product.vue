@@ -4,9 +4,15 @@
                 <img :src="avi" alt="">
             </div>
             <div class="details">
-                <p>{{name}}</p>
-                <p>₦{{price}}</p>
-                <p v-if="qty">X{{qty}}</p>
+                <div>
+                    <p class="one">{{name}}</p>
+                    <p class="two">₦{{price}}</p>
+                </div>
+                <button v-if="!qty" @click.stop="$emit('cartclick')">
+                     <img src="https://s2.svgbox.net/materialui.svg?color=5b5f5f&ic=add_shopping_cart" v-if="!carting" height="30" width="30"  alt="cart">
+                     <img src="https://s2.svgbox.net/loaders.svg?color=5b5f5f&ic=elastic-spinner" alt="loader" v-if="carting"  height="30" width="30">
+                </button>
+                <p class="three" v-if="qty">X{{qty}}</p>
             </div>
        </div>
 </template>
@@ -18,7 +24,7 @@ export default {
 
         }
     },
-    props:['name','price','qty','avi'],
+    props:['name','price','qty','avi','carting'],
 }
 </script>
 
@@ -43,31 +49,47 @@ div.product-image img{
      width: 100%;
 }
 div.details{
+    width: 100%;
     padding: 7px;
-    border: olivedrab 1px solid;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: #00253C 1px solid;
 }
 div.details p{
     font-size: 0.9rem;
     line-height: 133%;
 }
-div.details p:nth-child(1){
+div.details button{
+    height: 80%;
+    width: 20%;
+    padding: 5px;
+    cursor: pointer;
+    border: none;
+    border-radius: 5px;
+    outline: none;
+    background-color:#E5E5E5;
+}
+
+div.details button:hover{
+    box-shadow: 0px 1px 1.5px 0px rgba(102,96,102,1);
+}
+div.details p.one{
     margin-bottom: 5px;
     font-size: 0.85rem;
     color: #00253C;
 }
-div.details p:nth-child(2){
+div.details p.two{
     color: #219653;
     font-size: 1rem;
     font-weight: 700;
 }
-div.details p:nth-child(3){
-    text-align: right;
-}
 
-@media only screen and (max-width: 720px) {
+
+@media only screen and (max-width: 400px) {
      div.product-card{
         margin-right: 10px;
-        width: 225px;
+        width: 280px;
      }
 }
 </style>

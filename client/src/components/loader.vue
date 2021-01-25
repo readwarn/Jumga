@@ -1,6 +1,6 @@
 <template>
     <div class="loader" :style="{background:bg}">
-           <img src="https://s2.svgbox.net/loaders.svg?ic=tail-spin" alt="loader">
+           <img src="https://s2.svgbox.net/loaders.svg?ic=elastic-spinner" alt="loader">
     </div>
 </template>
 

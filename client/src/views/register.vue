@@ -44,7 +44,7 @@
                     <option value="ke">Ghana</option>
                 </select>
                 <img v-if="logging" src="https://s2.svgbox.net/loaders.svg?color=66C9FF&ic=spinner" alt="loader" width="32" height="32">
-                <button v-if="$route.params.id==='buyer' && !logging" @click="register($route.params.id)">SIGN UP</button>
+                <button v-if="$route.params.id==='buyer' && !logging" @click="registerBuyer()">SIGN UP</button>
                 <button @click="showDetail('store')" v-if="$route.params.id==='seller'">Next</button>
                 <p id="huh">Already have an account? <router-link :to="loginRoute">Login</router-link></p>
            </div>
@@ -83,14 +83,14 @@
                     <option value="ke">Kenya</option>
                 </select>
                 <label for="bank" >Bank</label>
-                <select id="bank" v-model="userBankCode" @change="console(userBankCode)">
+                <select id="bank" v-model="userBankCode">
                     <option v-for="(bank,index) in banks" :key="index" :value="bank.code">
                          {{bank.name}}
                     </option>
                 </select>
                 <button id="ve" @click="verifyBank()" :disabled="verifying">Verify Account</button>
-                <img v-if="logging" src="https://s2.svgbox.net/loaders.svg?color=66C9FF&ic=spinner" alt="loader" width="32" height="32">
-                <button :disabled="!bankVerified && !creating" @click="register($route.params.id)">Sign Up</button>
+                <img v-if="logging" id="load" src="https://s2.svgbox.net/loaders.svg?color=66C9FF&ic=spinner" alt="loader" width="32" height="32">
+                <button v-if="!logging" :disabled="!bankVerified && !creating" @click="createsubaccount()">Sign Up</button>
            </div>
    </div>
 </template>
@@ -153,9 +153,6 @@ export default {
                         this.accountDetail=true;
                     }
          },
-         console(data){
-              console.log(data);
-         },
          getBanks(){
              this.$http.get(`http://localhost:3000/flutter/banks/${this.country}`).then(res=>{
                     this.banks=res.data.data;
@@ -173,7 +170,6 @@ export default {
                         country:this.country,
                         split_value: 0.975
                }
-               console.log(sub);
                this.error='';
                this.$http.post('http://localhost:3000/flutter/subaccounts',
                     {
@@ -188,8 +184,11 @@ export default {
               .then(res=>{
                   this.creating=false;
                   if(res.data.status==='success'){
-                       this.shopID=res.data.data.subaccount_id;
+                       this.seller.shopID=res.data.data.subaccount_id;
                        this.detailsVerified=true;
+                       console.log('A',this.seller);
+                       this.registerSeller();
+                       
                   }else{
                       this.error=res.data.message;
                   }
@@ -200,8 +199,8 @@ export default {
          },
          verifyBank(){
              const bank = {
-                   account_number: this.accountNumber,
-                   account_bank: this.userBankCode
+                   "account_number":`${this.accountNumber}`,
+                   "account_bank":`${this.userBankCode}`
              }
              if(this.accountNumber===""){
                  this.error="Input Account Number";
@@ -260,42 +259,34 @@ export default {
              this.error='';
              this.fieldsVerified=true;
          },
-         verifyDetails(){
-                this.verifySellerField();
-                if(this.fieldsVerified){
-                    this.verifyBank();
-                }
-               if(this.bankVerified){
-                  this.createsubaccount();
-               }
-         },
-         register(user){
-             let condition=false;
-             if(user==='seller'){
-                 this.verifySellerField();
-               if(this.fieldsVerified){
-                 this.createsubaccount();
-                 condition=this.detailsVerified;
-               }
-             }
-             else if(user==='buyer'){
-                 this.verifyBuyerField();
-                 condition=this.buyerFields;
-             }
-             if(!condition){
-                    console.log('reg starting')
-                    this.logging=true;
-                    this.$http.post(`http://localhost:3000/auth/${user}/register`,this.seller)
+         registerSeller(){
+             this.logging=true;
+                    this.$http.post(`http://localhost:3000/auth/seller/register`,this.seller)
                     .then(res=>{
                     this.logging=false;
                     if(!res.data.loggedIn){
                          this.error=res.data.message;
                         }else{
-                        if(user==='seller'){
-                             this.$router.push('/shops/myShop');
+                             this.$router.push(`/shops/myShop`);
+                        }
+                    })
+                    .catch(err=>{
+                     console.log('rgister error block',err.message);
+                    })
+         },
+         registerBuyer(){
+                 this.buyerFields = false;
+                 this.verifyBuyerField();
+             if(this.buyerFields){
+                    console.log('reg starting');
+                    this.logging=true;
+                    this.$http.post(`http://localhost:3000/auth/buyer/register`,this.seller)
+                    .then(res=>{
+                    this.logging=false;
+                    if(!res.data.loggedIn){
+                         this.error=res.data.message;
                         }else{
                             this.$router.push(`/markets/${this.seller.country}`);
-                        }
                         }
                     })
                     .catch(err=>{
@@ -462,6 +453,10 @@ export default {
     }
     button#ve{
         margin-bottom: 10px;
+    }
+    img#load{
+        display: block;
+        margin: auto;
     }
     @media only screen and (max-width: 720px) {
             div.steps{

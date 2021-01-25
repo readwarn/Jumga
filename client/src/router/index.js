@@ -23,10 +23,16 @@ const routes = [
       import("../views/platforms.vue")
   },
   {
-    path: "/:id/approval",
+    path: "/buyer/approval/:orderID/:paymentID",
     name: "Approval",
     component: () =>
       import("../views/approval.vue")
+  },
+  {
+    path: "/seller/approval/:shopID/:paymentID",
+    name: "ApprovalSeller",
+    component: () =>
+      import("../views/approvalSeller.vue")
   },
   {
     path: "/:id/login",
@@ -41,7 +47,7 @@ const routes = [
       import("../views/register.vue")
   },
   {
-    path: "/payment",
+    path: "/payment/:id",
     name: "Payment",
     component: () =>
       import("../views/payment.vue")
@@ -59,7 +65,7 @@ const routes = [
       import("../views/onboard.vue")
   },
   {
-    path: "/newProduct/:id",
+    path: "/newProduct/:cc/:id",
     name: "newProduct",
     component: () =>
       import("../views/addProduct.vue")

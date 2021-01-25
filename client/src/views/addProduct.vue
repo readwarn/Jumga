@@ -30,12 +30,6 @@
             </div>
             <label for="del">Delivery fee</label>
             <input type="number" id="del" v-model="product.delivery">
-            <label for="country">Country</label>
-             <select id="country" v-model="product.country">
-                 <option value="ng">Nigeria</option>
-                 <option value="gh">Ghana</option>
-                 <option value="ke">Kenya</option>
-             </select>
             <p class="error">{{error}}</p>
             <div class="input-box">
                  <router-link to="/shops/myShop"><button>CANCEL</button></router-link>
@@ -63,7 +57,6 @@ export default {
                delivery:100,
                price:1,
                displayPicture:'https://www.publicdomainpictures.net/pictures/30000/velka/plain-white-background.jpg',
-               country:'',
                description:'',
                qty:1
            }
@@ -80,7 +73,7 @@ export default {
      methods:{
          verifyProductField(){
              this.fieldsVerified=false;
-             const fields=['name','delivery','price','displayPicture','country','description','qty'];
+             const fields=['name','delivery','price','displayPicture','description','qty'];
              for(let i=0;i<fields.length;i++){
                  if(this.product[fields[i]]===''){
                      this.error=`Please fill the product ${fields[i]}`;
@@ -96,6 +89,7 @@ export default {
                      this.loading=true;
                      this.product.price = parseFloat(this.product.price);
                      this.product.qty   = parseInt(this.product.qty);
+                     this.product.country = this.$route.params.cc;
                      this.$http.put(`http://localhost:3000/shops/${this.$route.params.id}`,this.product)
                     .then(res=>{ 
                     this.loading=false;     
@@ -103,12 +97,11 @@ export default {
                         name:'',
                         price:'',
                         displayPicture:'https://www.publicdomainpictures.net/pictures/30000/velka/plain-white-background.jpg',
-                        country:'',
                         description:'',
                         qty:1
                     }
                     if(!res.data.isApproved){
-                        this.$router.push('/payment');
+                        this.$router.push(`/payment/${this.$route.params.id.toString()}`);
                     }
               });
               }

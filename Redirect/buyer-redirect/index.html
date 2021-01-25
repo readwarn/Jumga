@@ -9,28 +9,8 @@
     <title>Jumga</title>
 </head>
 <body>
-    <div class="approval-container" id="app">
-        <div class="loader" v-if="verifying">
-            <img src="https://s2.svgbox.net/loaders.svg?ic=elastic-spinner" width="38" height="38" alt="loading">
-            <p>Verifying payment</p>
-        </div>
-        <nav> 
-            <a href="http://localhost:8080"><h3>Jumga</h3></a>
-        </nav>
-        <div class="success feedback" v-if="!failure && !verifying">
-            <p class="info">Your payment was succesful and your order will be shipped soon.</p>
-            <img src="dispatch.svg" alt="ok">
-            <a href="http://localhost:8080/markets">
-                <button>Proceed to marketplace</button>
-            </a>
-        </div>
-        <div class="failure feedback" v-if="failure && !verifying">
-            <p class="info">{{error}}</p>
-            <img src="https://s2.svgbox.net/illlustrations.svg?ic=pirahna" alt="failed">
-            <a href="http://localhost:8080/markets">
-                <button>Proceed to marketplace</button>
-            </a>
-        </div> 
+ <div id="app">
+    
  </div>
  <script src="app.js"></script>
 </body>

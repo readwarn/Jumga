@@ -3,6 +3,8 @@
           <nav>
               <h3>Jumga</h3>
           </nav>
+          <loader v-if="gettingShop" />
+          <p>{{error}}</p>
           <p class="info">You are required to pay a token of <span>{{mid}}{{amount}}</span> for your account to be approved</p>
           <img id="banner" src="../assets/payment.svg" alt="payment">
           <label for="cc">Change country</label>
@@ -18,16 +20,21 @@
 </template>
 
 <script>
+import loader from '../components/loader.vue';
 export default {
       name:"Payment",
+      components:{loader},
       data(){
           return{ 
             country:'NGN',
+            gettingShop:true,
             email:'yusufmosobalaje@gmail.com',
             loading:false,
             amount:8000,
+            error:"",
             country:'ngn',
             mid:'₦',
+            shop:''
           }
       },
       methods:{
@@ -55,11 +62,13 @@ export default {
                    "country":this.country,
                    "email":this.email,
                }
-              this.$http.post('http://localhost:3000/flutter/approval/pay',payment)
+              this.$http.post(`http://localhost:3000/flutter/approval/${this.$route.params.id}`,payment)
              .then(res=>{
-                 console.log(res.data);
-                 window.location.href = res.data.flutterData.data.link;
-                this.loading=false;
+                 if(res.data.status==="success"){
+                      window.location.href = res.data.data.link;
+                 }
+                 this.error='error making payment';
+                 this.loading=false;
              })
           }
       },
@@ -68,6 +77,15 @@ export default {
            .then(res=>{
                if(!res.data.loggedIn){
                  this.$router.push('/seller/login');
+               }else{
+                  this.$http.get('http://localhost:3000/shops/myShop')
+                 .then(res=>{
+                     this.gettingShop=false;
+                     this.shop=res.data;
+                     if(this.shop.isApproved){
+                         this.$router.push('/shops/myShop');
+                     }
+                 })
                }
            })
       }

@@ -8,38 +8,37 @@
             <a href="http://localhost:8080"><h3>Jumga</h3></a>
         </nav>
         <div class="success feedback" v-if="!failure && !verifying">
-            <p class="info">Your payment was succesful and your order will be shipped soon.</p>
+            <p class="info">Your Store has been approved and a dispatch rider has been assigned to you</p>
             <img src="../assets/dispatch.svg" alt="ok">
-            <router-link :to="{name:'Market', params:{id:param}}"><button>Continue Shopping</button></router-link>
+            <router-link :to="{name:'Shop'}"><button>Dashboard</button></router-link>
         </div>
         <div class="failure feedback" v-if="failure && !verifying">
             <p class="info">{{error}}</p>
             <img src="https://s2.svgbox.net/illlustrations.svg?ic=pirahna" alt="failed">
-            <router-link :to="{name:'Market', params:{id:param}}"><button>Continue Shopping</button></router-link>
+            <router-link :to="{name:'Shop'}"><button>Dashboard</button></router-link>
         </div> 
  </div>
 </template>
 
 <script>
+
 export default {
-      name:"Approval",
+      name:"ApprovalSeller",
       data(){
-        return{ 
+        return{
            failure:true,
            verifying:true,
            paymentID:'',
-           orderID:'',
+           shopID:'',
            amount:8000,
            error:'',
-           param:'ng'
         }
     },
     methods:{
-        updateOrder(){
-              this.$http.put(`http://localhost:3000/orders/${this.orderID}`)
+        approveStore(){
+              this.$http.put(`http://localhost:3000/shops/${this.shopID}/approve`)
               .then(res=>{
-                  let cc = res.data.country.substring(0, 2);
-                  this.param = cc.toLowerCase();
+                  console.log(res.data);
               })
         },
         verifyPayment(paymentID){
@@ -51,7 +50,7 @@ export default {
                          this.error=`You paid ${res.data.data.charged_amount} instead of ${this.amount}`
                          this.verifying=false;
                      }else{
-                        this.updateOrder();
+                        this.approveStore();
                         this.failure=false;
                         this.verifying=false;
                         this.error="";
@@ -65,14 +64,16 @@ export default {
         }
     },
     created(){
-       this.paymentID = this.$route.params.paymentID;
-       this.orderID   = this.$route.params.orderID;
-       if(this.paymentID!==null){
-           this.verifyPayment(this.paymentID); 
-       }else{
-           this.$router.push('/buyer/login')
+       this.paymentID = this.$route.params.paymentID.toString();
+       this.shopID   = this.$route.params.shopID.toString();
+       if(this.paymentID==='null'){
+           console.log('null',this.paymentID);
+           this.$router.push('/seller/login');
            this.verifying=false;
            this.error = "Invalid Transaction";
+       }else{
+           console.log('not-null',this.paymentID);
+           this.verifyPayment(this.paymentID);
        }
     }
 }
@@ -102,21 +103,19 @@ div.feedback{
     justify-content: center;
     align-items: center;
     flex-direction: column;
-    margin: auto;
 }
 div.feedback img{
     width: 20%;
-    height: 250px;
     display: block;
-    margin: auto;
+    margin:35px auto;
+    height: 250px;
 }
 p.info{
     font-size: 1.5rem;
     line-height: 128%;
     text-align: center;
     color: #00253C;
-    margin: auto;
-    margin-bottom: 14px;
+    margin-top: 20px;
 }
 button{
     height: 40px;
@@ -146,7 +145,8 @@ div.loader{
 
 @media only screen and (max-width: 720px) {
     p.info{
-       font-size: 1.2rem;
+       font-size: 0.95rem;
+       text-align: center;
     }
     div.feedback{
         width: 90%;

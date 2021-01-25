@@ -16,7 +16,7 @@
                     <input type="text" id="search">
                 </div>
                 <div class="product-container">
-                     <product v-for="(product,index) in products" :key="index" :avi="product.displayPicture" @productclick="renderItem(product)"  :price="product.price" :name="product.name" />
+                     <product v-for="(product,index) in products" :key="index" :carting="carting" :avi="product.displayPicture" @cartclick="addToCart(product,index)" @productclick="renderItem(product)"  :price="product.price" :name="product.name" />
                 </div>
           </div>
      </div> 
@@ -26,6 +26,7 @@
 import product from "@/components/product.vue";
 import loader from '../components/loader.vue';
 import Navbar from '../components/navbar.vue';
+
 export default {
      name:'Market',
      components:{
@@ -35,14 +36,58 @@ export default {
          return{
               loading:true,
               profile:false,
+              item:false,
               cart:'',
               itemRoute:'',
-              products:[]
+              carting:false,
+              products:[],
+              pids:[],
          }
      },
      methods:{
          renderItem(product){
              this.$router.push(`/market/${this.$route.params.id}/items/${product._id.toString()}`);
+         },
+         inCart(product){
+            let inside = false;
+            this.cart.items.forEach((item,i)=>{
+                 if(i===undefined){
+                      return false;
+                 }
+                 else{ 
+                     if(item.product._id==product._id){
+                         this.item=item;
+                         inside = true;
+                    }  
+                 }
+                })     
+          return inside;
+         }, 
+         updateItem(item,index){
+                this.carting=true;
+                this.$http.put(`http://localhost:3000/items/${item._id}`,{increment:1})
+                .then(res=>{
+                    this.cart.items.splice(index,1,res.data);
+                    this.carting=false;  
+                })
+         },
+         updateCart(product){
+               this.carting=true;
+               this.$http.put(`http://localhost:3000/carts/${this.cart._id}`,{
+                   product:product,
+                   increment:1
+               })
+              .then(res=>{
+                  this.cart = res.data;
+                  this.carting=false;
+              })
+         },
+         addToCart(product,index){
+             if(this.inCart(product)){
+                this.updateItem(this.item,index);
+             }else{
+                 this.updateCart(product);
+             }
          }
      },
      created(){

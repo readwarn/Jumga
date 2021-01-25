@@ -79,7 +79,8 @@
                             <label for="address">Address</label>
                             <textarea name="add" id="address" cols="30" v-model="address" rows="10"></textarea>
                             <p class="error" id="err">{{error}}</p>
-                            <button @click.stop="checkout()">PAY NOW</button>
+                            <img v-if="carting" src="https://s2.svgbox.net/loaders.svg?color=66C9FF&ic=spinner" alt="loader" width="32" height="32">
+                            <button v-if="!carting" @click.stop="checkout()">PAY NOW</button>
                         </div>
             </div>
     </div>
@@ -95,6 +96,7 @@ export default {
     data(){
         return{
             route:'markets/ng',
+            carting:false,
             profile:false,
             increment:1,
             error:'',
@@ -109,6 +111,7 @@ export default {
             currency:'NGN',
             cart:'',
             total:0,
+            products:[]
         }
     },
     methods:{
@@ -123,6 +126,12 @@ export default {
          },
          itemRoute(item){
               return `/market/${this.$route.params.id}/items/${item.product._id.toString()}`
+         },
+         emptyCart(){
+              this.$http.delete(`http://localhost:3000/carts/${this.cart._id}`)
+              .then(res=>{
+                  this.cart=res.data;s
+              })
          },
          decreaseItem(item,index){
              if(item.quantity===1){
@@ -150,6 +159,7 @@ export default {
                  .then(res=>{
                     this.updating=false;
                     this.cart.items.splice(index,1,res.data);
+                    this.createProducts(); 
                     this.total=0;
                     this.delivery=0;
                     this.cart.items.forEach(item => {
@@ -164,10 +174,20 @@ export default {
             .then(res=>{
                  this.deleting=false;
                  this.cart=res.data;
-                  if(this.cart.items.length===0){
+                 this.createProducts(); 
+                 if(this.cart.items.length===0){
                       this.empty=true;
-                  }
+                 }
             })
+         },
+         createProducts(){
+             this.cart.items.forEach(item => {
+                  const product = {
+                      id:item.product._id,
+                      quantity:item.quantity
+                  }
+                  this.products.push(product);
+             });
          },
          createSubaccount(id,charge){
                return {
@@ -180,7 +200,7 @@ export default {
          if(this.address.length<17){
               this.error='Write a proper address so we wont lose your order'
          }
-         else{
+         else{  
                let subs=[];
                this.cart.items.forEach((item,index) => {
                const newSub = this.createSubaccount(item.shop.accountID,(item.product.price*item.quantity*0.975));
@@ -205,11 +225,20 @@ export default {
           const pay={
                 "amount":cost,
                 "country":this.currency,
-                "subaccount":subs
-           }
+                "subaccount":subs,
+                "products":this.products,
+                "address":this.address,
+            }
+            this.carting=true;
             this.$http.post('http://localhost:3000/flutter/pay',pay)
             .then(res=>{
-                window.location.href = res.data.flutterData.data.link;
+                if(res.data.status==="success"){
+                      window.location.href = res.data.data.link;
+                      this.emptyCart();
+                }else{
+                    this.error = 'error making payment';
+                    this.carting=false;
+                }
             })
          }
         },
@@ -232,9 +261,11 @@ export default {
                   .then(res=>{
                        this.loading=false;
                        this.cart=res.data;
+                       console.log(this.cart);
                        if(this.cart.items.length===0){
                            this.empty=true;
                        }else{
+                            this.createProducts(); 
                             this.cart.items.forEach(item => {
                             this.total+=((item.product.price * item.quantity) + item.product.delivery);
                             this.delivery+=item.product.delivery;
