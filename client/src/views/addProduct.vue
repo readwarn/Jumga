@@ -7,11 +7,11 @@
             <p>Add new product</p>
             <label for="file" class="file">
                 <img :src="product.displayPicture" alt="loader" id="bg">
-                <loader v-if="uploading && !uploaded" />
-                <div v-if="uploaded || !uploading">
+                <loader v-if="uploading" />
+                <div>
                     <input type="file" name="file" id="file" @change="uploadProductImage">
                     <img src="../assets/Cloud.svg" alt="">
-                    <p>click to choose image</p>
+                    <p v-if="!uploaded">click to choose image</p>
                 </div>
             </label>
             <label for="name">Product name</label>
@@ -51,7 +51,7 @@ export default {
            loading:false,
            fieldsVerified:false,
            uploading:false,
-           uploaded:true,
+           uploaded:false,
            product:{
                name:'',
                delivery:100,
@@ -101,7 +101,7 @@ export default {
                         qty:1
                     }
                     if(!res.data.isApproved){
-                        this.$router.push(`/payment/${this.$route.params.id.toString()}`);
+                        this.$router.push(`/payment/${this.$route.params.cc.toString()}/${this.$route.params.id.toString()}`);
                     }
               });
               }
@@ -109,7 +109,7 @@ export default {
          uploadProductImage(e){
             const image = e.target.files[0];
             if(image.size<150000){
-                this.uploading=true; this.uploaded=false;
+                this.uploading=true;
                 const formData = new FormData();
                 formData.append('file', image);
                 formData.append('upload_preset', 'qv83yxtp');

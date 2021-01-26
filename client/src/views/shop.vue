@@ -1,15 +1,17 @@
 <template>
    <div class="dashboard-container">
      <nav>
-         <h3>
-             Jumga
-         </h3>
+         <router-link :to="homeRoute"><h3>Jumga</h3></router-link>
+          <div @click="logout()">
+              <p>logout</p>
+              <img  src="https://s2.svgbox.net/materialui.svg?color=005B94&ic=logout" width="30" height="30" alt="logout">
+          </div>
      </nav>
-       <div v-if="showaddProduct" class="addProduct">
-            <div>
+       <div :class="{'fade-away':showaddProduct}"  class="addProduct">
+            <div class="add-content">
                 <div class="decide">
-                     <img src="https://s2.svgbox.net/hero-outline.svg?ic=x" height="40" width="40" alt="cancel" @click.stop="showaddProduct=false">
-                     <h4>Add More!!!</h4>
+                     <h4>Add More {{updateProductName}}</h4>
+                     <img src="https://s2.svgbox.net/hero-outline.svg?ic=x" alt="cancel" @click.stop="showaddProduct=false">
                 </div>
                 <input type="number" :min="qty" v-model="qty">
                 <img v-if="updating" src="https://s2.svgbox.net/loaders.svg?ic=tail-spin" height="30" width="30" alt="updating">
@@ -17,36 +19,35 @@
             </div>
         </div>
         <loader v-if="gettingShop"/>
-        <div class="content" v-if="!gettingShop && !showaddProduct">
-        <div class="banner">
-            <div class="detail">
-               <h2 class="title">{{shop.name}}</h2>
-               <p class="subtitle">
-                   {{shop.description}}
-                </p>
-                <div class="phone">
-                       <img src="https://s2.svgbox.net/hero-outline.svg?color=66C9FF&ic=phone" width="18px" height="18px" alt="phone">
-                       <p>{{shop.phone}}</p>
+        <div class="content" v-if="!gettingShop">
+            <div class="banner">
+                <div class="detail">
+                        <h2 class="title">{{shop.name}} <img :src="check" height="30" width="30" alt=""></h2>
+                        <p class="subtitle">
+                        {{shop.description}}
+                        </p>
+                        <div class="phone">
+                        <img src="https://s2.svgbox.net/hero-outline.svg?color=66C9FF&ic=phone" width="18px" height="18px" alt="phone">
+                        <p>{{shop.phone}}</p>
+                        </div>
+                        <div class="phone">
+                        <img src="https://s2.svgbox.net/hero-outline.svg?color=66C9FF&ic=phone" width="18px" height="18px" alt="phone">
+                        <p>{{shop.address}}</p>
+                        </div>
                 </div>
-                <div class="phone">
-                       <img src="https://s2.svgbox.net/hero-outline.svg?color=66C9FF&ic=phone" width="18px" height="18px" alt="phone">
-                       <p>{{shop.address}}</p>
+                <div class="right">
+                        <div class="balance">
+                            <p>Balance</p>
+                            <p>₦{{shop.balance}}</p>
+                        </div>
+                        <button @click="$router.push(addProductRoute)">ADD PRODUCT</button>
                 </div>
            </div>
-           <div class="right">
-                <div class="balance">
-                        <p>Balance</p>
-                        <p>₦{{shop.balance}}</p>
+                <p class="title">Products</p>
+                <div class="product-container" v-if="!gettingShop && !showaddProduct">
+                    <product v-for="(product,index) in shop.products" :key="index" :avi="product.displayPicture" @productclick="hold(index,product)" :qty="product.qty" :name="product.name" :price="product.price"/>
                 </div>
-                <button @click="$router.push(addProductRoute)">ADD PRODUCT</button>
-           </div>
-           
-     </div>
-     <div class="product-container" v-if="!gettingShop && !showaddProduct">
-         <product v-for="(product,index) in shop.products" :key="index" :avi="product.displayPicture" v-on:productclick="hold(index,product)" :qty="product.qty" :name="product.name" :price="product.price"/>
-     </div>
-     </div>
-    
+         </div>
    </div>
 </template>
 
@@ -59,8 +60,12 @@ export default {
         return{
           qty:1,
           i:0,
+          country:'ng',
+          updateProductName:'',
+          check:'https://s2.svgbox.net/hero-outline.svg?color=005B94&ic=badge-check',
           showaddProduct:false,
           updating:false,
+          homeRoute:'',
           gettingShop:true,
           productID:'',  
           addProductRoute:'',  
@@ -74,22 +79,31 @@ export default {
         hold(index,product){
             this.i=index;
             this.qty=product.qty;
+            this.updateProductName=product.name;
             this.productID=product._id;
             this.showaddProduct=true;
-            console.log(product._id);
         },
         addProduct(){
-              if(shop.isApproved){
-                  this.$router.push(`/newProduct/${this.addProductRoute}`);
+              if(this.shop.isApproved){
+                  this.$router.push(`${this.addProductRoute}`);
               }else{
-                  this.$router.push('/payment');
+                  this.$router.push(`/payment/${this.shop._id.toString()}`);
               }
+        },
+        logout(){
+            this.$http.get('http://localhost:3000/auth/logout')
+            .then(res=>{
+                if(!res.data.loggedIn){
+                   this.$router.push('/seller/login');
+                }
+            })
         },
         updateProduct(){
             this.updating=true;
             this.$http.put(`http://localhost:3000/products/${this.productID}`,{qty:this.qty})
             .then(res=>{
                 this.updating=false;
+                console.log(res.data);
                 this.shop.products.splice(this.i,1,res.data);
                 this.addProduct=false;
                 this.showaddProduct=false;
@@ -104,8 +118,13 @@ export default {
                  .then(res=>{
                      this.gettingShop=false;
                      this.shop=res.data;
-                     console.log(this.shop);
-                     this.addProductRoute=`/newProduct/${this.$route.params.cc}/${this.shop._id}`;
+                     this.addProductRoute=`/newProduct/${this.shop.country}/${this.shop._id.toString()}`;
+                     this.homeRoute=`/markets/${this.shop.country}`;
+                     if(this.shop.isApproved){
+                            this.check = `https://s2.svgbox.net/hero-outline.svg?color=005B94&ic=badge-check`
+                     }else{
+                            this.check = `https://s2.svgbox.net/hero-outline.svg?color=red&ic=ban`
+                     }
                  })
              }else{
                 this.$router.push('/seller/login');
@@ -120,38 +139,44 @@ export default {
 
 <style scoped>
 div.dashboard-container{
-    background: #ffffff;
-    border: transparent 1px solid;
+    min-height: 100%;
+    background: #E5E5E5;
 }
 nav{
-    padding: 10px 50px;
+    padding: 10px 30px;
     margin-bottom: 10px;
     box-shadow: 0px 1px 2px 0px rgba(102,96,102,1);
     position: fixed;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     top: 0;
     left: 0;
     width: 100%;
     z-index: 10;
     background: #ffffff;
 }
+nav a{
+    text-decoration: none;
+}
+nav div{
+    width: 12%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: #005B94;
+}
 h3{
     color: #005B94;
     font-size: 2rem;
     line-height: 130%;
 }
-div.addProduct div.decide{
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-}
 div.content{
-    width: 60%;
+    width: 80%;
     margin: auto;
-    padding: 20px 30px;
-    margin-top: 70px;
+    margin-top: 62px;
     position: relative;
-    background: #E5E5E5;
 }
 div.banner{
     display: flex;
@@ -195,6 +220,8 @@ div.balance{
     border-radius: 10px;
     padding: 15px;
     margin-bottom: 0px;
+    background: #ffffff;
+    border: #66C9FF 0.5px solid;
 }
 div.balance p:nth-child(2){
      font-size: 1.5rem;
@@ -209,15 +236,17 @@ div.balance p:nth-child(1){
 div.product-container{
     display: flex;
     flex-wrap: wrap;
-    justify-content: center;
 }
 button{
-    height: 40px;
-    width: 100%;
+    height: 33px;
+    width: 80%;
+    margin:10px auto 0px auto;
+    display: block;
     outline: none;
     border: none;
+    border-radius: 4px;
     color: #ffffff;
-    font-size: 1rem;
+    font-size: 0.85rem;
     background: #66C9FF;
     cursor: pointer;
 }
@@ -226,26 +255,49 @@ button:hover{
 }
 div.addProduct{
     height: 100vh;
-    width: 100%;
+    width:100%;
+    background: rgba(192, 189, 189, 0.65);
+    margin: auto;
+    z-index: 10;
     display: flex;
     justify-content: center;
     align-items: center;
-    position: fixed;
+    position: absolute;
     top: 0;
     left: 0;
+    right: 0;
+    opacity: 0;
+    z-index: -4;
+    transition: opacity ease-in-out 0.4s;
+}
+div.addProduct.fade-away{
+     opacity: 1;
+     z-index: 10;
+}
+div.addProduct div.add-content{
+    width: 35%;
+    height: 40%;
+    background: #E5E5E5;
+    padding: 18px;
+    border-radius: 4px;
+}
+div.addProduct div.add-content div.decide{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #00253C;
+    font-size: 1.4rem;
+}
+div.addProduct div.add-content div.decide img{
+    width: 37px;
+    height: 37px;
+    cursor: pointer;
 }
 div.addProduct input{
     height: 40px;
     width: 100%;
     padding: 10px;
     margin: 20px 0px;
-}
-div.addProduct div:nth-child(1){
-    width: 70%;
-    padding: 10px;
-}
-div.product h4{
-    text-align: center;
 }
 div.product button{
     width: 70%;
@@ -255,7 +307,12 @@ div.product button{
     height: 40px;
     cursor: pointer;
 }
-
+p.title{
+    color: #005B94;
+    font-size: 1.1rem;
+    margin-bottom: 10px;
+    font-weight: 700;
+}
 @media only screen and (max-width: 720px) {
         nav{
             padding: 10px 15px;
@@ -263,15 +320,14 @@ div.product button{
         }
         div.content{
             width: 90%;
-            padding: 5px 10px;
         }
         div.detail{
             width: 100%;
             order: 1;
         }
         div.right{
-            width: 40%;
-            margin-left: auto;
+            width: 60%;
+            margin:20px 0 20px auto;
             margin-bottom: 20px;
             order: 0;
         }
@@ -290,8 +346,12 @@ div.product button{
             font-size: 0.85rem;
             line-height: 140%;
         }
-        div.addProduct div{
+        div.product-container{
+            justify-content: center;
+        }
+        div.addProduct div.add-content{
             width: 80%;
+            height: 35%;
         }
 }
 

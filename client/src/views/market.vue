@@ -4,9 +4,9 @@
           <loader v-if="loading" />
           <div class="banner" v-if="!loading">
                  <div>
-                      <h3>AMAZING DEALS</h3>
+                      <h3>Amazing Deals</h3>
                       <img src="https://s2.svgbox.net/illlustrations.svg?ic=ironman" alt="hero">
-                      <h3>THIS FRIDAY.</h3>
+                      <h3>This Friday.</h3>
                  </div>
           </div>
           <div class="content" v-if="!loading">
@@ -16,7 +16,7 @@
                     <input type="text" id="search">
                 </div>
                 <div class="product-container">
-                     <product v-for="(product,index) in products" :key="index" :carting="carting" :avi="product.displayPicture" @cartclick="addToCart(product,index)" @productclick="renderItem(product)"  :price="product.price" :name="product.name" />
+                     <product v-for="(product,index) in products" :key="index" :carting="carting" :avi="product.displayPicture" @cartclick="addToCart(product)" @productclick="renderItem(product)"  :price="product.price" :name="product.name" />
                 </div>
           </div>
      </div> 
@@ -48,9 +48,9 @@ export default {
          renderItem(product){
              this.$router.push(`/market/${this.$route.params.id}/items/${product._id.toString()}`);
          },
-         inCart(product){
+         inCart(product,cart){
             let inside = false;
-            this.cart.items.forEach((item,i)=>{
+            cart.items.forEach((item,i)=>{
                  if(i===undefined){
                       return false;
                  }
@@ -63,11 +63,10 @@ export default {
                 })     
           return inside;
          }, 
-         updateItem(item,index){
+         updateItem(item){
                 this.carting=true;
                 this.$http.put(`http://localhost:3000/items/${item._id}`,{increment:1})
                 .then(res=>{
-                    this.cart.items.splice(index,1,res.data);
                     this.carting=false;  
                 })
          },
@@ -82,9 +81,9 @@ export default {
                   this.carting=false;
               })
          },
-         addToCart(product,index){
-             if(this.inCart(product)){
-                this.updateItem(this.item,index);
+         addToCart(product){
+             if(this.inCart(product,this.cart)){
+                this.updateItem(this.item);
              }else{
                  this.updateCart(product);
              }

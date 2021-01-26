@@ -36,6 +36,7 @@ router.post('/:seller/register', function (req,res,next){
                       description:req.body.shopDescription,
                       phone:req.body.phone,
                       address:req.body.address,
+                      country:req.body.country,
                       accountID:req.body.shopID,
                       balance:0,
                       owner:newUser._id
@@ -93,6 +94,9 @@ router.post('/buyer/login', function(req, res, next) {
 
   router.get('/logout',(req,res)=>{
     req.logout();
+    res.json({
+      loggedIn:false
+    })
   });
 
 module.exports=router;

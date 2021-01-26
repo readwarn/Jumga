@@ -110,7 +110,6 @@ export default {
                   const cost =(this.product.price * this.units) + this.product.delivery;
                   const sellerCharge = this.product.price * this.units * 0.975;
                   const dispatchCharge = this.product.delivery * 0.8;
-
          const pay={
                 "amount":cost,
                 "country":this.currency,

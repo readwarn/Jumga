@@ -37,7 +37,29 @@ router.delete('/:orderID',Auth.isLoggedIn,Auth.isItYours(Order,'orderID'),(req,r
     })
 })
 
+router.get('/:orderID',(req,res)=>{
+    Order.findById(req.params.orderID)
+    .populate({
+        path:'products',
+        populate:{
+            path:'id',
+            populate:{
+                path:'shop',
+                model:'Shop'
+            }
+        }
+    })
+    .exec(function(err,order){
+        if(err){
+             return res.send('error');
+        }else{
+            res.json(order);
+        }
+    })
+})
+
 router.put('/:orderID',Auth.isLoggedIn,Auth.isItYours(Order,'orderID'),(req,res)=>{
+    console.log()
     Order.findById(req.params.orderID)
     .populate({
         path:'products',
@@ -63,9 +85,9 @@ router.put('/:orderID',Auth.isLoggedIn,Auth.isItYours(Order,'orderID'),(req,res)
                 }
                 product.id.qty=product.id.qty - product.quantity;
                 product.id.save();
-                order.save();
-                res.json(order);
             });
+            order.save();
+            res.json(order);
         }  
     })
 })

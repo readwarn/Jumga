@@ -5,6 +5,7 @@ const shopSchema=new Schema({
     description:String,
     address:String,
     phone:String,
+    country:String,
     isApproved:{
         type:Boolean,
         default:false

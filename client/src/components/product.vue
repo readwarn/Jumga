@@ -12,7 +12,7 @@
                      <img src="https://s2.svgbox.net/materialui.svg?color=5b5f5f&ic=add_shopping_cart" v-if="!carting" height="30" width="30"  alt="cart">
                      <img src="https://s2.svgbox.net/loaders.svg?color=5b5f5f&ic=elastic-spinner" alt="loader" v-if="carting"  height="30" width="30">
                 </button>
-                <p class="three" v-if="qty">X{{qty}}</p>
+                <p class="three" v-if="qty">{{qty}} Units</p>
             </div>
        </div>
 </template>

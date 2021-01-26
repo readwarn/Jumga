@@ -100,7 +100,7 @@ router.get('/this/:productID',(req,res)=>{
     })
 })
 
-router.put('/:productID',Auth.isItYours(Product,'productID'),(req,res)=>{
+router.put('/:productID',Auth.isLoggedIn,Auth.isItYours(Product,'productID'),(req,res)=>{
        Product.findById(req.params.productID)
       .populate([
         {

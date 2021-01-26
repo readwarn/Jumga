@@ -186,9 +186,7 @@ export default {
                   if(res.data.status==='success'){
                        this.seller.shopID=res.data.data.subaccount_id;
                        this.detailsVerified=true;
-                       console.log('A',this.seller);
                        this.registerSeller();
-                       
                   }else{
                       this.error=res.data.message;
                   }
@@ -267,7 +265,7 @@ export default {
                     if(!res.data.loggedIn){
                          this.error=res.data.message;
                         }else{
-                             this.$router.push(`/shops/myShop`);
+                             this.$router.push(`/shops/${this.seller.country}/myShop`);
                         }
                     })
                     .catch(err=>{
