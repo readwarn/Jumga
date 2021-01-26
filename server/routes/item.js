@@ -4,8 +4,7 @@ const Item=require('../models/item');
 const Cart=require('../models/cart');
 const Product=require('../models/product');
 const Auth=require('../middleware/authware');
-const product = require('../models/product');
-const item = require('../models/item');
+
 
 router.put('/:itemID',Auth.isLoggedIn,Auth.isItYours(Item,'itemID'),(req,res)=>{
    Item.findById(req.params.itemID)
@@ -58,25 +57,13 @@ router.post('/:productID',Auth.isLoggedIn,(req,res)=>{
     Item.create({
         owner:req.user._id,
         product:req.params.productID,
-        shop:req.body.shop._id,
-        quantity:1
+        shop:req.body.shop,
+        quantity:req.body.units
     },function(err,item){
         if(err){
             return res.send('error');
         }else{
-            Item.findById(item._id).populate([
-                {
-                   path:'product',
-                   populate:{
-                       path:'shop',
-                       model:'Shop'
-                   }
-                },
-                {
-                    path:'shop',
-                    model:'Shop'
-                }
-            ]).exec((err,popitem)=>{
+            Item.findById(item._id,(err,popitem)=>{
                 if(err){
                    return res.send('err');
                 }else{

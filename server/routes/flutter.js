@@ -67,7 +67,7 @@ router.post('/subaccounts',(req,res)=>{
 router.post('/pay',Auth.isLoggedIn,(req,res)=>{
     let pay={}; let ref='';
     Order.create({
-            products:req.body.products,
+            items:req.body.items,
             owner:req.user._id,
             date:Date.now(),
             status:'Unpaid',

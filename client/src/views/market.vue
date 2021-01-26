@@ -46,6 +46,7 @@ export default {
      },
      methods:{
          renderItem(product){
+             // render an item based on product clicked
              this.$router.push(`/market/${this.$route.params.id}/items/${product._id.toString()}`);
          },
          inCart(product,cart){
@@ -82,6 +83,9 @@ export default {
               })
          },
          addToCart(product){
+             // before an item is added to the cart, it is checked whether its in the cart already
+             // if yes, the item quantity is updated,
+             // if no, the item will be added
              if(this.inCart(product,this.cart)){
                 this.updateItem(this.item);
              }else{

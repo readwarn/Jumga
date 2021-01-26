@@ -103,21 +103,28 @@ export default {
               }
         },
         buynow(){
+            // ensure the address is at least 17 characters
             if(this.address.length<18){
                  this.error='Fill the address a proper address so we wont lose your order';
                 
             }else{
-                  const cost =(this.product.price * this.units) + this.product.delivery;
-                  const sellerCharge = this.product.price * this.units * 0.975;
-                  const dispatchCharge = this.product.delivery * 0.8;
-         const pay={
+                this.buying=true;
+                const cost =(this.product.price * this.units) + this.product.delivery;
+                const sellerCharge = this.product.price * this.units * 0.975;
+                const dispatchCharge = this.product.delivery * 0.8;
+
+            //create an item for the order
+            this.$http.post(`http://localhost:3000/items/${this.product._id}`,
+            {
+              shop:this.product.shop._id,
+              units:this.units
+            })
+            .then(res=>{
+             const pay = {
+                "items":[res.data._id],    
                 "amount":cost,
                 "country":this.currency,
                 "address":this.address,
-                "products":[{
-                    id:this.product._id,
-                    quantity:this.units
-                }],
                 "subaccount":[
                     {
                         "id":this.product.shop.accountID,
@@ -130,16 +137,16 @@ export default {
                         "transaction_charge":dispatchCharge
                     }
                 ]
-            }
-            this.buying=true;
-            this.$http.post('http://localhost:3000/flutter/pay',pay)
-            .then(res=>{
-                if(res.data.status==="success"){
-                    window.location.href = res.data.data.link;
-                }else{
-                    this.error = 'error making payment';
-                    this.buying=false;
                 }
+                 this.$http.post('http://localhost:3000/flutter/pay',pay)
+                .then(res=>{
+                    if(res.data.status==="success"){
+                        window.location.href = res.data.data.link;
+                    }else{
+                        this.error = 'error making payment';
+                        this.buying=false;
+                    }
+                })
             })
             }
         }
@@ -165,6 +172,10 @@ export default {
                        this.$http.get(`http://localhost:3000/carts/${this.$route.params.cc}/myCart`)
                       .then(res=>{
                           this.cart=res.data;
+                          // before pushing an item into the cart 
+                          // decide whether the item is already in the cart
+                          // if yes, the item quantity will be updated in the cart
+                          // if no, it will simply be pushed in the cart
                           this.inCart(this.product,this.cart);
                           this.loading=false;
                       })

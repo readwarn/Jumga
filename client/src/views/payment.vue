@@ -39,6 +39,8 @@ export default {
       },
       methods:{
           calc(){
+              // decides currency for payment charge
+              // decides the currency symbol too
               if(this.country==='ngn'){
                   this.amount=8000;
                   this.mid='₦';

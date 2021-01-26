@@ -154,12 +154,14 @@ export default {
                     }
          },
          getBanks(){
+             // fetch banks based on country, using the flutter api
              this.$http.get(`http://localhost:3000/flutter/banks/${this.country}`).then(res=>{
                     this.banks=res.data.data;
                     this.bankLoading=false;
              })
          },
          createsubaccount(){
+              // a subaccount account is created for the shop owners
               this.creating=true;
               const sub = {
                         account_bank: this.userBankCode,
@@ -196,6 +198,7 @@ export default {
               })
          },
          verifyBank(){
+             // verifies bank account details provided
              const bank = {
                    "account_number":`${this.accountNumber}`,
                    "account_bank":`${this.userBankCode}`
@@ -265,7 +268,7 @@ export default {
                     if(!res.data.loggedIn){
                          this.error=res.data.message;
                         }else{
-                             this.$router.push(`/shops/${this.seller.country}/myShop`);
+                             this.$router.push(`/shops/myShop`);
                         }
                     })
                     .catch(err=>{

@@ -9,9 +9,9 @@ router.get('/:cc/myOrder',Auth.isLoggedIn,(req,res)=>{
         owner:req.user._id
     })
     .populate({
-        path:'products',
+        path:'items',
         populate:{
-            path:'id',
+            path:'product',
             populate:{
                 path:'shop',
                 model:'Shop'
@@ -40,9 +40,9 @@ router.delete('/:orderID',Auth.isLoggedIn,Auth.isItYours(Order,'orderID'),(req,r
 router.get('/:orderID',(req,res)=>{
     Order.findById(req.params.orderID)
     .populate({
-        path:'products',
+        path:'items',
         populate:{
-            path:'id',
+            path:'product',
             populate:{
                 path:'shop',
                 model:'Shop'
@@ -59,12 +59,12 @@ router.get('/:orderID',(req,res)=>{
 })
 
 router.put('/:orderID',Auth.isLoggedIn,Auth.isItYours(Order,'orderID'),(req,res)=>{
-    console.log()
+    console.log('logedin? ',req.isAuthenticated())
     Order.findById(req.params.orderID)
     .populate({
-        path:'products',
+        path:'items',
         populate:{
-            path:'id',
+            path:'product',
             populate:{
                 path:'shop',
                 model:'Shop'
@@ -76,22 +76,19 @@ router.put('/:orderID',Auth.isLoggedIn,Auth.isItYours(Order,'orderID'),(req,res)
             return res.send('error');
         }else{
             order.status='Paid';
-            let shopids=[];
-            order.products.forEach((product,index) => {
-                shopids.push(product.id.shop._id.toString());
-                product.id.shop.balance+= product.id.price * product.quantity * 0.975;
-                if(index===0 || !shopids.includes(product.id.shop._id.toString())){
-                    product.id.shop.save();
+            order.items.forEach((item,index) => {
+                item.product.shop.balance+= item.product.price * item.quantity * 0.975;
+                item.product.qty=item.product.qty - item.quantity;
+                item.product.save();
+                if (index === (order.items.length-1)){
+                  item.product.shop.save();
                 }
-                product.id.qty=product.id.qty - product.quantity;
-                product.id.save();
             });
             order.save();
             res.json(order);
         }  
     })
 })
-
 
 module.exports=router;
 

@@ -67,7 +67,6 @@ router.post('/seller/login',Authware.isSeller,function(req, res, next) {
     }
     req.logIn(user, function(err) {
       if (err) { return next(err); }
-      console.log(typeof req.user._id.toString());
       return res.json({loggedIn:req.isAuthenticated()});
     });
   })(req, res, next);

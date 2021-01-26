@@ -1,4 +1,5 @@
 <template>
+          <!-- Buyer selects preferred marketplace -->
       <div class="house">
             <nav><h3>Jumga</h3></nav>
             <div class="content">

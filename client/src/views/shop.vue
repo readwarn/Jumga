@@ -40,7 +40,7 @@
                             <p>Balance</p>
                             <p>₦{{shop.balance}}</p>
                         </div>
-                        <button @click="$router.push(addProductRoute)">ADD PRODUCT</button>
+                        <button @click="addProduct()">ADD PRODUCT</button>
                 </div>
            </div>
                 <p class="title">Products</p>
@@ -99,6 +99,7 @@ export default {
             })
         },
         updateProduct(){
+            //add more product
             this.updating=true;
             this.$http.put(`http://localhost:3000/products/${this.productID}`,{qty:this.qty})
             .then(res=>{
@@ -120,6 +121,7 @@ export default {
                      this.shop=res.data;
                      this.addProductRoute=`/newProduct/${this.shop.country}/${this.shop._id.toString()}`;
                      this.homeRoute=`/markets/${this.shop.country}`;
+                     // decide the badge of the store based on if it is approved or not
                      if(this.shop.isApproved){
                             this.check = `https://s2.svgbox.net/hero-outline.svg?color=005B94&ic=badge-check`
                      }else{

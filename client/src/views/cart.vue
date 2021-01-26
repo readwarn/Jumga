@@ -111,11 +111,12 @@ export default {
             currency:'NGN',
             cart:'',
             total:0,
-            products:[]
+            items:[]
         }
     },
     methods:{
          abracadabra(e){
+               // hide the address form on clicking any part of the screen aside the address form
               const textarea = document.querySelector('textarea');
               if(e.target!==textarea){
                  this.showAddress=false;
@@ -125,12 +126,14 @@ export default {
 
          },
          itemRoute(item){
+               // set the route for each item in the cart
               return `/market/${this.$route.params.id}/items/${item.product._id.toString()}`
          },
          emptyCart(){
+              // invoke this after an order is made
               this.$http.delete(`http://localhost:3000/carts/${this.cart._id}`)
               .then(res=>{
-                  this.cart=res.data;s
+                  this.cart=res.data;
               })
          },
          decreaseItem(item,index){
@@ -152,6 +155,7 @@ export default {
              }
          },
          updateItem(item,index){
+             // Update the quantity of an item in the cart
                   this.updating=true;
                   this.$http.put(`http://localhost:3000/items/${item._id}`,{
                       increment:this.increment
@@ -159,7 +163,6 @@ export default {
                  .then(res=>{
                     this.updating=false;
                     this.cart.items.splice(index,1,res.data);
-                    this.createProducts(); 
                     this.total=0;
                     this.delivery=0;
                     this.cart.items.forEach(item => {
@@ -169,26 +172,27 @@ export default {
                 })
          },
          deleteItem(item){
+             // delete item from cart
              this.deleting=true;
              this.$http.delete(`http://localhost:3000/items/${item._id}/${this.cart._id}`)
             .then(res=>{
                  this.deleting=false;
                  this.cart=res.data;
-                 this.createProducts(); 
                  if(this.cart.items.length===0){
                       this.empty=true;
                  }
             })
          },
-         createProducts(){
+
+         createItems(){
+             // create array of item ids [used to create the order model]
+             let items=[];
              this.cart.items.forEach(item => {
-                  const product = {
-                      id:item.product._id,
-                      quantity:item.quantity
-                  }
-                  this.products.push(product);
+                items.push(item._id);
              });
+             return items;
          },
+
          createSubaccount(id,charge){
                return {
                     "id":`${id}`,
@@ -196,11 +200,9 @@ export default {
                     "transaction_charge":charge
                }
          },
-         checkout(){
-         if(this.address.length<17){
-              this.error='Write a proper address so we wont lose your order'
-         }
-         else{  
+         createSubaccountIDs(){
+               // create array of flutter subaccounts
+                // [used to share payment according to owner of items being purchased]
                let subs=[];
                this.cart.items.forEach((item,index) => {
                const newSub = this.createSubaccount(item.shop.accountID,(item.product.price*item.quantity*0.975));
@@ -208,6 +210,7 @@ export default {
                    subs.push(newSub);
                }else{
                     subs.forEach((sub,index)=>{
+                        // create the array of subaccount ids such that there isn't multiple subaccounts in the array
                         if(sub.id===newSub.id){
                             const newCharge=sub.transaction_charge + newSub.transaction_charge;
                             const updatedSub = this.createSubaccount(sub.id, newCharge);
@@ -217,24 +220,36 @@ export default {
                         }
                     })
                }
+               // include the dispatch rider subaccount id too
+             const dispatch = this.createSubaccount('RS_A75DF63E1A4BF2757823E93F91279AB3',this.delivery*0.8);
+             subs.push(dispatch);
+             return subs;
           });
+
+         },
+         checkout(){
+           // ensure the address is at least 17 characters
+         if(this.address.length<17){
+            this.error='Write a proper address so we wont lose your order'
+         }
+
+          else{   
           const cost = this.total + this.delivery;
-          const dispatch = this.createSubaccount('RS_A75DF63E1A4BF2757823E93F91279AB3',this.delivery*0.8);
-          subs.push(dispatch);
-         
+          const subs = this.createSubaccountIDs();
+          const items = this.createItems();
           const pay={
                 "amount":cost,
                 "country":this.currency,
                 "subaccount":subs,
-                "products":this.products,
+                "items":items,
                 "address":this.address,
             }
             this.carting=true;
             this.$http.post('http://localhost:3000/flutter/pay',pay)
             .then(res=>{
                 if(res.data.status==="success"){
+                      // load the flutter payment link
                       window.location.href = res.data.data.link;
-                      this.emptyCart();
                 }else{
                     this.error = 'error making payment';
                     this.carting=false;
@@ -261,11 +276,10 @@ export default {
                   .then(res=>{
                        this.loading=false;
                        this.cart=res.data;
-                       console.log(this.cart);
                        if(this.cart.items.length===0){
                            this.empty=true;
                        }else{
-                            this.createProducts(); 
+                            // calculate cost of items in the cart 
                             this.cart.items.forEach(item => {
                             this.total+=((item.product.price * item.quantity) + item.product.delivery);
                             this.delivery+=item.product.delivery;

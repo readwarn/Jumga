@@ -44,8 +44,11 @@ export default {
                                 this.$router.push('/markets');
                             }
                         }else{
-                            this.error=res.data.message;
-                            console.log('err');
+                              if(!res.data.isSeller){
+                                  this.error="Invalid Details"
+                              }else{
+                                  this.error=res.data.message;
+                              }
                         }
                     })
                     .catch(err=>{

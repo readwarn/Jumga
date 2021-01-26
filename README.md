@@ -1,6 +1,9 @@
 # jumga
 Jumga is marketplace created for buyer and sellers of product. A seller uses the platform to advertise and sell his/her products. The buyer browse through the marketplace to buy products. The payment system for the marketplace is facilatated with the flutterwave v3 api.
 
+## Preview
+![Preview](https://github.com/readwarn/Jumga/blob/master/assets/preview.gif)
+
 ## Features
 * Seller sign up with account detail
 * Account detail is verified with the flutter api
@@ -11,12 +14,43 @@ Jumga is marketplace created for buyer and sellers of product. A seller uses the
 * The app is in test-mode i.e you can only regsiter with test account and can only pay with test card
 
 #### Test accounts
-Use these test accounts
-![Test accounts](https://github.com/readwarn/Jumga/blob/master/assets/test-accounts.png)
+Use these [test accounts](https://developer.flutterwave.com/docs/test-bank-accounts)
+
+* Access Bank
+    Account number: 0690000031 
+    OTP: 12345
+* Access Bank 2
+    Account number: 0690000032
+    OTP: 12345
+* Access Bank 3
+    Account number: 0690000033
+    OTP: 12345
+* Access Bank 4
+    Account number: 0690000034
+    OTP: 12345
 
 #### Test cards
-Use these test cards
-![Test accounts](https://github.com/readwarn/Jumga/blob/master/assets/test-cards.png)
+Use these [test cards](https://developer.flutterwave.com/docs/test-cards)
+##### Test MasterCard PIN authentication
+* Card number: 5531 8866 5214 2950
+    cvv: 564
+    Expiry: 09/32
+    Pin: 3310
+    OTP: 12345
+
+##### Test Visa Card 3D-Secure authentication (VBVSECURECODE)
+* Card number: 4187 4274 1556 4246
+    cvv: 828
+    Expiry: 09/32
+    Pin: 3310
+    OTP: 12345
+
+##### Test Card Insufficient Funds
+* Card number: 5258 5859 2266 6506
+    cvv: 883
+    Expiry: 09/31
+    Pin: 3310
+    OTP: 12345
 
 ## Project setup
 To run the app locally on your computer you will need to create a mongodb connection url and also a flutterwave account. After signing up with flutterwave, navigate to your dashboard, toggle to test-mode, then click on settings then API, here you can see your account API keys, copy the secret key as shown below.

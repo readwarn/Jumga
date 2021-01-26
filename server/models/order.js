@@ -1,15 +1,11 @@
 const mongoose=require('mongoose');
 const Schema=mongoose.Schema;
 const orderSchema=new Schema({
-    products:[
-    {
-         id:{
-            type:mongoose.Schema.Types.ObjectId,
-            ref:'Product'
-         },
-         quantity:Number
-    }
-    ],
+    items:[
+     {
+        type:mongoose.Schema.Types.ObjectId,
+        ref:'Item'
+    }],
     date:Date,
     status:String,
     delivered:{
