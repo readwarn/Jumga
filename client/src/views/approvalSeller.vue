@@ -21,7 +21,6 @@
 </template>
 
 <script>
-
 export default {
       name:"ApprovalSeller",
       data(){
@@ -142,7 +141,6 @@ div.loader{
     background: #ffffff;
     text-align: center;
 }
-
 @media only screen and (max-width: 720px) {
     p.info{
        font-size: 0.95rem;

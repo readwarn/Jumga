@@ -3,8 +3,8 @@
      <nav>
          <router-link :to="homeRoute"><h3>Jumga</h3></router-link>
           <div @click="logout()">
-              <p>logout</p>
-              <img  src="https://s2.svgbox.net/materialui.svg?color=005B94&ic=logout" width="30" height="30" alt="logout">
+              <p>LogOut</p>
+              <img  src="https://s2.svgbox.net/materialui.svg?color=005B94&ic=logout" width="20" height="20" alt="logout">
           </div>
      </nav>
        <div :class="{'fade-away':showaddProduct}"  class="addProduct">
@@ -91,7 +91,7 @@ export default {
               }
         },
         logout(){
-            this.$http.get('http://localhost:3000/auth/logout')
+            this.$http.get('auth/logout')
             .then(res=>{
                 if(!res.data.loggedIn){
                    this.$router.push('/seller/login');
@@ -99,9 +99,9 @@ export default {
             })
         },
         updateProduct(){
-            //add more product
+            //add more product [stock-up]
             this.updating=true;
-            this.$http.put(`http://localhost:3000/products/${this.productID}`,{qty:this.qty})
+            this.$http.put(`products/${this.productID}`,{qty:this.qty})
             .then(res=>{
                 this.updating=false;
                 console.log(res.data);
@@ -112,10 +112,10 @@ export default {
         }
     },
     created(){
-          this.$http.get('http://localhost:3000/auth/status')
+          this.$http.get('auth/status')
          .then(res=>{
              if(res.data.loggedIn){
-                 this.$http.get('http://localhost:3000/shops/myShop')
+                 this.$http.get('shops/myShop')
                  .then(res=>{
                      this.gettingShop=false;
                      this.shop=res.data;
@@ -162,12 +162,14 @@ nav a{
     text-decoration: none;
 }
 nav div{
-    width: 12%;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: space-between;
     color: #005B94;
+}
+nav div p{
+   margin-right: 8px;
 }
 h3{
     color: #005B94;
@@ -175,9 +177,10 @@ h3{
     line-height: 130%;
 }
 div.content{
-    width: 80%;
+    width: 90%;
     margin: auto;
     margin-top: 62px;
+    padding: 15px 0px;
     position: relative;
 }
 div.banner{
@@ -321,7 +324,7 @@ p.title{
             margin-bottom: 10px;
         }
         div.content{
-            width: 90%;
+            width: 95%;
         }
         div.detail{
             width: 100%;

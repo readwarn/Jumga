@@ -17,12 +17,11 @@ const app = express();
 app.use(bodyParser.json());
 app.set('trust proxy', 1)
 app.use(require('express-session')({
-  secret:'hello circuit world',
+  secret:'Hello Jumga world',
   resave:false,
   saveUninitialized:false,
   cookie:{
-    maxAge: 24 * 60 * 60 * 1000,
-    sameSite:"lax",
+    sameSite:"Lax",
     // secure:true
   }
 }));
@@ -50,7 +49,7 @@ app.use('/auth', auth);
 app.use('/shops', shop);
 
 
-app.listen(3000,function(){
+app.listen(process.env.PORT || 3000,function(){
       console.log('server running');
 });
 

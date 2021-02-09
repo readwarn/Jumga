@@ -9,8 +9,8 @@
                     <p class="two">₦{{price}}</p>
                 </div>
                 <button v-if="!qty" @click.stop="$emit('cartclick')">
-                     <img src="https://s2.svgbox.net/materialui.svg?color=5b5f5f&ic=add_shopping_cart" v-if="!carting" height="30" width="30"  alt="cart">
-                     <img src="https://s2.svgbox.net/loaders.svg?color=5b5f5f&ic=elastic-spinner" alt="loader" v-if="carting"  height="30" width="30">
+                     <p v-if="!carting">Cart</p>
+                     <img src="https://s2.svgbox.net/loaders.svg?color=5b5f5f&ic=elastic-spinner" alt="loader" v-if="carting"  height="17" width="17">
                 </button>
                 <p class="three" v-if="qty">{{qty}} Units</p>
             </div>
@@ -30,16 +30,17 @@ export default {
 
 <style scoped>
  div.product-card{
-     width: 250px;
+     width: 245px;
      padding: 5px;
      background: #ffffff;
      cursor: pointer;
-     border: 1px solid #00253C;
      margin-bottom: 25px;
      margin-right: 25px;
+     box-shadow: 0px 1px 2px 0px rgba(102,96,102,1);
+     border-radius: 3px;
  }
  div.product-card:hover{
-     box-shadow: 0px 1px 2px 0px rgba(102,96,102,1);
+     background: #fcfafa;
  }
  div.product-image{
      height: 230px;
@@ -54,7 +55,6 @@ div.details{
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border: #00253C 1px solid;
 }
 div.details p{
     font-size: 0.9rem;
@@ -62,21 +62,22 @@ div.details p{
 }
 div.details button{
     height: 80%;
-    width: 20%;
-    padding: 5px;
+    width: 25%;
+    padding: 8px;
     cursor: pointer;
-    border: none;
-    border-radius: 5px;
+    box-shadow: 0px 1px 1.5px 0px rgba(102,96,102,1);
+    border-radius: 2px;
     outline: none;
-    background-color:#E5E5E5;
+    border: none;
+    background: none;
 }
 
 div.details button:hover{
-    box-shadow: 0px 1px 1.5px 0px rgba(102,96,102,1);
+    border: 1.4px solid #219653;
 }
 div.details p.one{
     margin-bottom: 5px;
-    font-size: 0.85rem;
+    font-size: 0.95rem;
     color: #00253C;
 }
 div.details p.two{
@@ -86,10 +87,10 @@ div.details p.two{
 }
 
 
-@media only screen and (max-width: 400px) {
+@media only screen and (max-width: 600px) {
      div.product-card{
         margin-right: 10px;
-        width: 280px;
+        width: 200px;
      }
 }
 </style>

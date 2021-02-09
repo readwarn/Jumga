@@ -76,6 +76,7 @@ router.put('/:orderID',Auth.isLoggedIn,Auth.isItYours(Order,'orderID'),(req,res)
             return res.send('error');
         }else{
             order.status='Paid';
+            // The quantity of each product in the order is updated (reduced according to units ordered). And the seller account balance is updated too.
             order.items.forEach((item,index) => {
                 item.product.shop.balance+= item.product.price * item.quantity * 0.975;
                 item.product.qty=item.product.qty - item.quantity;

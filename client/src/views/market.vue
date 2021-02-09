@@ -1,15 +1,22 @@
 <template>
      <div class="market-container" @click="profile=false">
-          <navbar :profile="profile" @profileclick="profile=!profile" :cc="$route.params.id" :item="cart.items.length" v-if="!loading" />
+          <navbar :profile="profile" @profileclick="profile=!profile" :cc="$route.params.id" :item="cart.items.length" v-if="!loading && !empty" />
           <loader v-if="loading" />
-          <div class="banner" v-if="!loading">
+          <div class="empty" v-if="empty && !loading">
+                 <div>
+                        <router-link to="/markets">&#60; back</router-link>
+                        <p>Ooops! No products yet. Check back later</p>
+                        <img src="../assets/empty-shop.svg" alt="">
+                 </div>
+          </div>
+          <div class="banner" v-if="!loading && !empty">
                  <div>
                       <h3>Amazing Deals</h3>
                       <img src="https://s2.svgbox.net/illlustrations.svg?ic=ironman" alt="hero">
                       <h3>This Friday.</h3>
                  </div>
           </div>
-          <div class="content" v-if="!loading">
+          <div class="content" v-if="!loading && !empty">
                 <label for="search">Search for a product</label>
                 <div class="input-box">
                     <img src="https://s2.svgbox.net/hero-outline.svg?color=BDBDBD&ic=search" width="18px" height="18px" alt="">
@@ -35,6 +42,7 @@ export default {
      data(){
          return{
               loading:true,
+              empty:false,
               profile:false,
               item:false,
               cart:'',
@@ -66,14 +74,14 @@ export default {
          }, 
          updateItem(item){
                 this.carting=true;
-                this.$http.put(`http://localhost:3000/items/${item._id}`,{increment:1})
+                this.$http.put(`items/${item._id}`,{increment:1})
                 .then(res=>{
                     this.carting=false;  
                 })
          },
          updateCart(product){
                this.carting=true;
-               this.$http.put(`http://localhost:3000/carts/${this.cart._id}`,{
+               this.$http.put(`carts/${this.cart._id}`,{
                    product:product,
                    increment:1
                })
@@ -94,20 +102,24 @@ export default {
          }
      },
      created(){
-             this.$http.get('http://localhost:3000/auth/status')
+             this.$http.get('auth/status')
             .then(res=>{
                if(!res.data.loggedIn){
                  this.$router.push('/buyer/login');
                }else{
-                    this.$http.get(`http://localhost:3000/products/${this.$route.params.id}`)
+                    this.$http.get(`products/${this.$route.params.id}`)
                    .then(res=>{
                            if(res.data.length>0){
                                  this.products=res.data;
-                                 this.$http.get(`http://localhost:3000/carts/${this.$route.params.id}/myCart`)
+                                 this.$http.get(`carts/${this.$route.params.id}/myCart`)
                                 .then(res=>{
                                  this.cart=res.data;
                                  this.loading=false;
                            })
+                        }
+                        else{
+                            this.loading=false;
+                            this.empty=true;     
                         }
                    })
                }
@@ -121,7 +133,7 @@ div.market-container{
     height: 100%;
 }
 div.content{
-    width: 80%;
+    width: 95%;
     height: 100%;
     margin: auto;
 }
@@ -180,8 +192,34 @@ div.banner div{
 div.banner div img{
     height: 100%;
 }
+div.empty{
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+div.empty a{
+    text-decoration: none;
+    font-size: 1.3rem;
+}
+div.empty p{
+    font-size: 2rem;
+    text-align: center;
+    margin: 7px 0px 0px 0px;
+}
+div.empty img{
+    width: 60%;
+    display: block;
+    margin: auto;
+    height: 75%;
+}
+div.empty div{
+    width: 90%;
+    height: 75%;
+}
 
- @media only screen and (max-width: 720px) {
+@media only screen and (max-width: 720px) {
     div.content{
         width: 98%;
     }
@@ -195,6 +233,12 @@ div.banner div img{
     div.banner h3{
     font-size: 1rem;
     text-align: left;
-   }        
+    }
+    div.empty a{
+    font-size: 0.9rem;
+    }
+    div.empty p{
+        font-size: 1.5rem;
+    }        
   }
 </style>

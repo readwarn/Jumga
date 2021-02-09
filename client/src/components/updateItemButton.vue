@@ -40,7 +40,7 @@ export default {
  }
 
  div.buttons button:disabled{
-     background: rgb(90, 88, 88);
+     background: rgb(231, 229, 229);
      cursor: not-allowed;
  }
 

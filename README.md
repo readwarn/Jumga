@@ -2,6 +2,7 @@
 Jumga is marketplace created for buyer and sellers of product. A seller uses the platform to advertise and sell his/her products. The buyer browse through the marketplace to buy products. The payment system for the marketplace is facilatated with the flutterwave v3 api.
 
 ## Preview
+[Jumga live link](https://shielded-castle-16981.herokuapp.com/)
 ![Preview](https://github.com/readwarn/Jumga/blob/master/assets/preview.gif)
 
 ## Features

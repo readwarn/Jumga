@@ -27,8 +27,8 @@
                         <img :src="item.product.displayPicture" class="avi" alt="product">
                         <div class="detail">
                            <p>Seller: <span>{{item.shop.name}}</span></p>
+                           <router-link :to="itemRoute(item)">{{item.product.name}}</router-link>
                            <div class="delete">
-                                 <router-link :to="itemRoute(item)">{{item.product.name}}</router-link>
                                  <img src="https://s2.svgbox.net/hero-outline.svg?color=red&ic=trash" v-if="!deleting" @click="deleteItem(item)" height="20" width="20" alt="delete">
                                  <img id="load" v-if="deleting" src="https://s2.svgbox.net/loaders.svg?color=red&ic=tail-spin" height="30" width="30" alt="updating">
                             </div>
@@ -74,8 +74,8 @@
             </div>
              <div class="address-popup" v-if="showAddress">
                         <div> 
-                            <h4>Pay ₦{{(total + delivery)}}</h4>
-                            <p v-if="address!==''">Your Order costs {{(total + delivery)}} and will be shipped to {{address}}</p>
+                            <h4>Pay ₦{{total}}</h4>
+                            <p v-if="address!==''">Your Order costs ₦{{total}} and will be shipped to {{address}}</p>
                             <label for="address">Address</label>
                             <textarea name="add" id="address" cols="30" v-model="address" rows="10"></textarea>
                             <p class="error" id="err">{{error}}</p>
@@ -131,7 +131,7 @@ export default {
          },
          emptyCart(){
               // invoke this after an order is made
-              this.$http.delete(`http://localhost:3000/carts/${this.cart._id}`)
+              this.$http.delete(`carts/${this.cart._id}`)
               .then(res=>{
                   this.cart=res.data;
               })
@@ -146,6 +146,7 @@ export default {
             }
          },
          increaseItem(item,index){
+             // checks if there is enough item from the seller
             if(item.quantity===item.product.qty){
                this.error='Not enough product from seller';
             }else{
@@ -157,12 +158,15 @@ export default {
          updateItem(item,index){
              // Update the quantity of an item in the cart
                   this.updating=true;
-                  this.$http.put(`http://localhost:3000/items/${item._id}`,{
+                  this.$http.put(`items/${item._id}`,{
                       increment:this.increment
                   })
                  .then(res=>{
                     this.updating=false;
+                    // replace the updated item in the cart
                     this.cart.items.splice(index,1,res.data);
+
+                    // recalculate the cart total and delivery cost
                     this.total=0;
                     this.delivery=0;
                     this.cart.items.forEach(item => {
@@ -174,12 +178,19 @@ export default {
          deleteItem(item){
              // delete item from cart
              this.deleting=true;
-             this.$http.delete(`http://localhost:3000/items/${item._id}/${this.cart._id}`)
+             this.$http.delete(`items/${item._id}/${this.cart._id}`)
             .then(res=>{
                  this.deleting=false;
                  this.cart=res.data;
                  if(this.cart.items.length===0){
                       this.empty=true;
+                 }else{
+                    this.total=0;
+                    this.delivery=0;
+                    this.cart.items.forEach(item => {
+                        this.total+=((item.product.price * item.quantity) + item.product.delivery);
+                        this.delivery+=item.product.delivery;
+                    });
                  }
             })
          },
@@ -202,7 +213,7 @@ export default {
          },
          createSubaccountIDs(){
                // create array of flutter subaccounts
-                // [used to share payment according to owner of items being purchased]
+                // [used to share payment according to owner of each item being purchased]
                let subs=[];
                this.cart.items.forEach((item,index) => {
                const newSub = this.createSubaccount(item.shop.accountID,(item.product.price*item.quantity*0.975));
@@ -234,7 +245,7 @@ export default {
          }
 
           else{   
-          const cost = this.total + this.delivery;
+          const cost = this.total;
           const subs = this.createSubaccountIDs();
           const items = this.createItems();
           const pay={
@@ -245,7 +256,7 @@ export default {
                 "address":this.address,
             }
             this.carting=true;
-            this.$http.post('http://localhost:3000/flutter/pay',pay)
+            this.$http.post('flutter/pay',pay)
             .then(res=>{
                 if(res.data.status==="success"){
                       // load the flutter payment link
@@ -267,12 +278,12 @@ export default {
               this.currency==='KES'
           }
          this.route=`/markets/${this.$route.params.id}`;
-         this.$http.get('http://localhost:3000/auth/status')
+         this.$http.get('auth/status')
            .then(res=>{
                if(!res.data.loggedIn){
                  this.$router.push('/buyer/login');
                }else{
-                   this.$http.get(`http://localhost:3000/carts/${this.$route.params.id}/myCart`)
+                   this.$http.get(`carts/${this.$route.params.id}/myCart`)
                   .then(res=>{
                        this.loading=false;
                        this.cart=res.data;
@@ -329,11 +340,13 @@ div.item-box{
     font-weight: 700;
     font-size: 1rem;
 }
+
 div.item-box.heading{
      padding: 0px;
 }
 div.item-box img.avi{
-    width: 34%;
+    min-width: 170px;
+    max-width: 170px;
     height: 120px;
     margin-right:26px;
 }
@@ -354,9 +367,9 @@ div.detail p span{
 div.detail a{
     text-decoration: none;
     display: block;
-    font-size: 1rem;
+    font-size: 1.2rem;
     color: black;
-    margin-right:15px;
+    margin:15px 0px;
 }
 div.detail a:hover{
     color: #219653;
@@ -365,7 +378,7 @@ div.delete{
     display: flex;
     align-items: center;
     cursor: pointer;
-    margin-top:24px;
+    margin-top:14px;
     width: 100%;
 }
 

@@ -1,6 +1,10 @@
 <template>
    <div class="login-container" v-if="($route.params.id==='seller')||($route.params.id==='buyer')">
-         <nav><h3>Jumga</h3></nav>
+         <nav><router-link to="/"><h3>Jumga</h3></router-link></nav>
+         <div class="welcome">
+               <h3>Welcome back,</h3>
+               <h4>Sign in to continue.</h4>
+         </div>
          <div class="content">
              <p class="error">{{error}}</p>
              <label for="username">Username</label>
@@ -34,7 +38,7 @@ export default {
                    this.error='Fill all details'
               }else{
                      this.loading=true;
-                     this.$http.post(`http://localhost:3000/auth/${this.$route.params.id}/login`,user)
+                     this.$http.post(`auth/${this.$route.params.id}/login`,user)
                     .then(res=>{
                         this.loading=false;
                         if(res.data.loggedIn){
@@ -66,10 +70,13 @@ export default {
 <style scoped>
 div.login-container{
    height: 100%;
+   display: flex;
+   justify-content: space-between;
+   align-items: flex-start;
+   flex-wrap: wrap;
 }
 nav{
     padding: 10px 50px;
-    margin-bottom: 10px;
     box-shadow: 0px 1px 2px 0px rgba(102,96,102,1);
     position: fixed;
     top: 0;
@@ -84,10 +91,24 @@ h3{
 }
 div.content{
     width: 50%;
-    margin: auto;
-    border: 1px solid black;
+    border: 1.5px solid #005B94;
+    border-radius: 8px;
     padding: 25px;
-    margin-top: 80px;
+    margin-top: 10%;
+    margin: auto;
+}
+div.welcome{
+    margin-top: 65px;
+    width: 40%;
+    padding: 10% 20px;
+    height: calc(100vh - 67px);
+}
+div.welcome h3{
+    font-size: 3rem;
+}
+div.welcome h4{
+    font-size: 2.2rem;
+    color: #66C9FF;
 }
 p.error{
     color: red;
@@ -130,7 +151,19 @@ p#huh{
         margin-bottom: 10px;
     }
     div.content{
-        width: 95%;
+        margin-top: 0px;
+        width: 90%;
+    }
+    div.welcome{
+        width: 100%;
+        height: auto;
+        padding: 10px 20px;
+    }
+    div.welcome h3{
+        font-size: 2.2rem;
+    }
+    div.welcome h4{
+        font-size: 1.5rem;
     }
 }
 </style>

@@ -143,7 +143,6 @@ div.loader{
     background: #ffffff;
     text-align: center;
 }
-
 @media only screen and (max-width: 720px) {
     p.info{
        font-size: 1.2rem;

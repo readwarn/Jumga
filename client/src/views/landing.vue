@@ -6,12 +6,10 @@
                 <div class="banner">
                     <div class="detail">
                         <h4 class="title">
-                            Buy and sell at affordable rates with Jumja.
+                            Buy and sell at affordable rates with Jumga.
                         </h4>
-                        <p class="subtitle">Lorem ipsum dolor sit amet, consectetur adipiscing elit. 
-                            Libero diam habitant massa risus. 
-                            Dui enim ut elementum tristique odio nunc. 
-                            Sed tincidunt morbi at ut faucibus.
+                        <p class="subtitle">
+                            Jumga connects buyer and seller for seamless transaction.
                         </p>
                         <div class="input-box">
                              <button @click="$router.push('/onboard')">BE A SELLER</button>

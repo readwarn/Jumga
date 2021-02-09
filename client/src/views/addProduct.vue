@@ -4,14 +4,14 @@
               <h3>Jumga</h3>
           </nav>
           <div class="upload">
-            <p>Add new product</p>
+            <router-link to="/shops/myShop">&#60; back</router-link>
             <label for="file" class="file">
                 <img :src="product.displayPicture" alt="loader" id="bg">
                 <loader v-if="uploading" />
                 <div>
                     <input type="file" name="file" id="file" @change="uploadProductImage">
                     <img src="../assets/Cloud.svg" alt="">
-                    <p v-if="!uploaded">click to choose image</p>
+                    <p v-if="!uploaded">Click to choose image</p>
                 </div>
             </label>
             <label for="name">Product name</label>
@@ -63,7 +63,7 @@ export default {
        }
      },
      created(){
-            this.$http.get('http://localhost:3000/auth/status')
+            this.$http.get('auth/status')
            .then(res=>{
                if(!res.data.loggedIn){
                  this.$router.push('/seller/login');
@@ -90,7 +90,7 @@ export default {
                      this.product.price = parseFloat(this.product.price);
                      this.product.qty   = parseInt(this.product.qty);
                      this.product.country = this.$route.params.cc;
-                     this.$http.put(`http://localhost:3000/shops/${this.$route.params.id}`,this.product)
+                     this.$http.put(`shops/${this.$route.params.id}`,this.product)
                     .then(res=>{ 
                     this.loading=false;     
                     this.product={
@@ -156,10 +156,14 @@ export default {
         width: 45%;
         margin: auto;
         padding-bottom: 50px;
-        margin-top: 40px;
+        margin-top: 70px;
+    }
+    div.upload a{
+        color: #005B94;
+        text-decoration: none;
     }
     label.file{
-        margin: 20px 0px;
+        margin: 5px 0px 20px 0px;
         height:120px;
         border:1.5px dashed #66C9FF;
         display: flex;

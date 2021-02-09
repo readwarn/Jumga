@@ -45,7 +45,7 @@ export default {
         }
     },
     created(){
-         this.$http.get('http://localhost:3000/users/currentUser')
+         this.$http.get('users/currentUser')
         .then(res=>{
             this.user=res.data;
         })
@@ -54,7 +54,7 @@ export default {
     },
     methods:{
         logout(){
-            this.$http.get('http://localhost:3000/auth/logout');
+            this.$http.get('auth/logout');
             this.$router.push('/buyer/login');
         }
     }

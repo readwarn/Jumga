@@ -1,6 +1,6 @@
 <template>
-     <div class="item-container">
-         <navbar :cc="$route.params.cc" :item="cart.items.length" v-if="!loading" />
+     <div class="item-container" @click="profile=false">
+         <navbar :profile="profile" @profileclick="profile=!profile" :cc="$route.params.cc" :item="cart.items.length" v-if="!loading" />
          <loader v-if="loading" />
          <div class="content"  v-if="!loading">
                <div class="product-container">
@@ -40,6 +40,7 @@ export default {
             loading:true,
             units:1,
             address:'Ibadan',
+            profile:false,
             updating:false,
             carting:false,
             cart:'',
@@ -67,7 +68,7 @@ export default {
         },
         updateCart(){
                this.carting=true;
-               this.$http.put(`http://localhost:3000/carts/${this.cart._id}`,{
+               this.$http.put(`carts/${this.cart._id}`,{
                    product:this.product,
                    increment:this.units
                })
@@ -80,7 +81,7 @@ export default {
         },
         updateItem(item){
              this.carting=true;
-             this.$http.put(`http://localhost:3000/items/${item._id}`,{increment:this.units})
+             this.$http.put(`items/${item._id}`,{increment:this.units})
             .then(res=>{
                 console.log('updating');
                 this.carting=false;  
@@ -114,7 +115,7 @@ export default {
                 const dispatchCharge = this.product.delivery * 0.8;
 
             //create an item for the order
-            this.$http.post(`http://localhost:3000/items/${this.product._id}`,
+            this.$http.post(`items/${this.product._id}`,
             {
               shop:this.product.shop._id,
               units:this.units
@@ -138,7 +139,7 @@ export default {
                     }
                 ]
                 }
-                 this.$http.post('http://localhost:3000/flutter/pay',pay)
+                 this.$http.post('flutter/pay',pay)
                 .then(res=>{
                     if(res.data.status==="success"){
                         window.location.href = res.data.data.link;
@@ -161,15 +162,15 @@ export default {
                 this.currency==='KES'
             }
 
-            this.$http.get('http://localhost:3000/auth/status')
+            this.$http.get('auth/status')
             .then(res=>{
                if(!res.data.loggedIn){
                  this.$router.push('/buyer/login');
                }else{ 
-                  this.$http.get(`http://localhost:3000/products/this/${this.$route.params.id}`)
+                  this.$http.get(`products/this/${this.$route.params.id}`)
                   .then(res=>{
                       this.product=res.data;
-                       this.$http.get(`http://localhost:3000/carts/${this.$route.params.cc}/myCart`)
+                       this.$http.get(`carts/${this.$route.params.cc}/myCart`)
                       .then(res=>{
                           this.cart=res.data;
                           // before pushing an item into the cart 
@@ -210,10 +211,10 @@ input#qty{
     margin-top: 5px;
 }
 div.content{
-    width: 70%;
+    width: 100%;
     margin:auto;
     background: gainsboro;
-    padding: 20px;
+    padding: 10px 50px 50px 50px;
     margin-top: 63px; 
 }
 div.product-container{
@@ -222,14 +223,13 @@ div.product-container{
     align-items: center;
     justify-content: space-between;
     margin-bottom: 40px;
-    border: 1px solid black;
     background: #fffff5;
     padding: 25px;
 }
 div.product-container img{
     width: 40%;
     height: 300px;
-    box-shadow: 0px 1px 2px 0px rgba(102,96,102,1);
+    border-radius: 5px;
 }
 div.details{
     width: 40%;
@@ -244,6 +244,7 @@ span#seller{
 h4{
     color: #00253C;
     line-height: 29px;
+    font-size: 2.1rem;
     margin-bottom: 10px;
 }
 p.del{
@@ -272,6 +273,10 @@ input{
     height: 40px;
     padding: 10px;
     margin-bottom: 5px;
+}
+textarea{
+    width: 100%;
+    margin-bottom: 10px;
 }
 div.input-box{
     display: flex;
@@ -302,8 +307,7 @@ nav{
     margin-bottom: 10px;
 }
 div.content{
-    width: 98%;
-    padding-bottom: 40px;
+    padding: 10px 10px 30px 10px;
 }
 div.product-container img{
     width: 100%;

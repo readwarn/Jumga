@@ -2,7 +2,6 @@ const express=require('express');
 const router=express.Router();
 const Item=require('../models/item');
 const Cart=require('../models/cart');
-const Product=require('../models/product');
 const Auth=require('../middleware/authware');
 
 

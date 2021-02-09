@@ -64,7 +64,7 @@ export default {
                    "country":this.country,
                    "email":this.email,
                }
-              this.$http.post(`http://localhost:3000/flutter/approval/${this.$route.params.id}`,payment)
+              this.$http.post(`flutter/approval/${this.$route.params.id}`,payment)
              .then(res=>{
                  if(res.data.status==="success"){
                       window.location.href = res.data.data.link;
@@ -75,12 +75,12 @@ export default {
           }
       },
       created(){
-            this.$http.get('http://localhost:3000/auth/status')
+            this.$http.get('auth/status')
            .then(res=>{
                if(!res.data.loggedIn){
                  this.$router.push('/seller/login');
                }else{
-                  this.$http.get('http://localhost:3000/shops/myShop')
+                  this.$http.get('shops/myShop')
                  .then(res=>{
                      this.gettingShop=false;
                      this.shop=res.data;

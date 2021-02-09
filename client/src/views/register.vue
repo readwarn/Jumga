@@ -1,96 +1,104 @@
 <template>
    <div class="register-container" v-if="($route.params.id==='seller') ||($route.params.id==='buyer')">
            <nav>
-               <h3>Jumga</h3>
+            <router-link to="/"><h3>Jumga</h3></router-link>
            </nav>
-           <div class="steps" v-if="$route.params.id==='seller'">
-               <div class="step">
-                      <div class="step-index" @click="showDetail('seller')">
-                           <p>1</p>
-                      </div>
-                      <p class="step-name">Seller’s Details</p>
-               </div>
-               <div class="rule">
+            <div class="welcome">
+                <h3>Create an Account,</h3>
+                <h4>Introduce yourself.</h4>
+           </div>
+           <div class="info">
+                    <div class="steps" v-if="$route.params.id==='seller'">
+                        <div class="step">
+                                <div class="step-index" @click="showDetail('seller')">
+                                    <p>1</p>
+                                </div>
+                                <p class="step-name">Seller’s Details</p>
+                        </div>
+                        <div class="rule">
 
-               </div>
-                <div class="step">
-                      <div class="step-index" @click="showDetail('store')">
-                           <p>2</p>
-                      </div>
-                      <p class="step-name">Store Details</p>
-               </div>
-               <div class="rule">
+                        </div>
+                        <div class="step">
+                            <div class="step-index" @click="showDetail('store')">
+                                <p>2</p>
+                            </div>
+                            <p class="step-name">Store Details</p>
+                        </div>
+                        <div class="rule">
 
-               </div>
-               <div class="step">
-                      <div class="step-index"  @click="showDetail('bank')">
-                           <p>3</p>
-                      </div>
-                      <p class="step-name">Bank account</p>
-               </div>
-           </div>
-           <div class="details" v-if="userDetail">
-                <p class="error">{{error}}</p>
-                <label for="username">Username</label>
-                <input type="text" id="username" v-model="seller.username">
-                <label for="password">Password</label>
-                <input type="text" id="password" v-model="seller.password">
-                <label for="username">Email</label>
-                <input type="email" id="email" v-model="seller.email">
-                <label for="country">Country</label>
-                <select  id="country" v-model="seller.country">
-                    <option value="ng">Nigeria</option>
-                    <option value="gh">Kenya</option>
-                    <option value="ke">Ghana</option>
-                </select>
-                <img v-if="logging" src="https://s2.svgbox.net/loaders.svg?color=66C9FF&ic=spinner" alt="loader" width="32" height="32">
-                <button v-if="$route.params.id==='buyer' && !logging" @click="registerBuyer()">SIGN UP</button>
-                <button @click="showDetail('store')" v-if="$route.params.id==='seller'">Next</button>
-                <p id="huh">Already have an account? <router-link :to="loginRoute">Login</router-link></p>
-           </div>
-            <div class="details" v-if="storeDetail">
-                <label for="storeName">Store Name</label>
-                <input type="text" id="storeName" v-model="seller.shopname">
-                <label for="description">Store Description</label>
-                <textarea  id="description" cols="30" rows="10" v-model="seller.shopDescription"></textarea>
-                <label for="phone">Phone</label>
-                <input type="text" id="phone" v-model="seller.phone">
-                <label for="add">Address</label>
-                <input type="text" id="add" v-model="seller.address">
-                <button @click="showDetail('bank')">Next</button>
-           </div>
-           <div class="details" v-if="accountDetail">
-                <p class="error">{{error}}</p>
-                <p class="info">{{accountName}}</p>
-                <div class="loader bank" v-if="verifying">
-                       <p>Verifying bank</p>
-                       <img src="https://s2.svgbox.net/loaders.svg?ic=three-dots" alt="loader" width="32" height="32">
+                        </div>
+                        <div class="step">
+                            <div class="step-index"  @click="showDetail('bank')">
+                                <p>3</p>
+                            </div>
+                            <p class="step-name">Bank account</p>
+                        </div>
                 </div>
-                 <div class="loader bank" v-if="bankLoading">
-                       <p>Loading bank select another country to refresh</p>
-                       <img src="https://s2.svgbox.net/loaders.svg?ic=three-dots" alt="loader" width="32" height="32">
+                <div class="details" v-if="userDetail">
+                        <p class="error">{{error}}</p>
+                        <label for="username">Username</label>
+                        <input type="text" id="username" v-model="seller.username">
+                        <label for="password">Password</label>
+                        <input type="text" id="password" v-model="seller.password">
+                        <label for="username">Email</label>
+                        <input type="email" id="email" v-model="seller.email">
+                        <label for="country">Country</label>
+                        <select  id="country" v-model="seller.country">
+                            <option value="ng">Nigeria</option>
+                            <option value="gh">Kenya</option>
+                            <option value="ke">Ghana</option>
+                        </select>
+                        <img v-if="logging" src="https://s2.svgbox.net/loaders.svg?color=66C9FF&ic=spinner" alt="loader" width="32" height="32">
+                        <div class="huh">
+                            <p id="huh">Already have an account? <router-link :to="loginRoute">Login</router-link></p>
+                            <button v-if="$route.params.id==='buyer' && !logging" @click="registerBuyer()">SIGN UP</button>
+                            <button @click="showDetail('store')" v-if="$route.params.id==='seller'">Next</button>
+                        </div>
                 </div>
-                <div class="loader bank" v-if="creating">
-                       <p>Creating account id</p>
-                       <img src="https://s2.svgbox.net/loaders.svg?ic=three-dots" alt="loader" width="32" height="32">
+                    <div class="details" v-if="storeDetail">
+                        <label for="storeName">Store Name</label>
+                        <input type="text" id="storeName" v-model="seller.shopname">
+                        <label for="description">Store Description</label>
+                        <textarea  id="description" cols="30" rows="10" v-model="seller.shopDescription"></textarea>
+                        <label for="phone">Phone</label>
+                        <input type="text" id="phone" v-model="seller.phone">
+                        <label for="add">Address</label>
+                        <input type="text" id="add" v-model="seller.address">
+                        <button @click="showDetail('bank')">Next</button>
                 </div>
-                <label for="account">Account Number</label>
-                <input type="text" id="account" v-model="accountNumber">
-                <label for="country">Country</label>
-                <select id="country" v-model="country" @change="getBanks()">
-                    <option value="ng">Nigeria</option>
-                    <option value="gh">Ghana</option>
-                    <option value="ke">Kenya</option>
-                </select>
-                <label for="bank" >Bank</label>
-                <select id="bank" v-model="userBankCode">
-                    <option v-for="(bank,index) in banks" :key="index" :value="bank.code">
-                         {{bank.name}}
-                    </option>
-                </select>
-                <button id="ve" @click="verifyBank()" :disabled="verifying">Verify Account</button>
-                <img v-if="logging" id="load" src="https://s2.svgbox.net/loaders.svg?color=66C9FF&ic=spinner" alt="loader" width="32" height="32">
-                <button v-if="!logging" :disabled="!bankVerified && !creating" @click="createsubaccount()">Sign Up</button>
+                <div class="details" v-if="accountDetail">
+                        <p class="error">{{error}}</p>
+                        <p class="info">{{accountName}}</p>
+                        <div class="loader bank" v-if="verifying">
+                            <p>Verifying bank</p>
+                            <img src="https://s2.svgbox.net/loaders.svg?ic=three-dots" alt="loader" width="32" height="32">
+                        </div>
+                        <div class="loader bank" v-if="bankLoading">
+                            <p>Loading bank select another country to refresh</p>
+                            <img src="https://s2.svgbox.net/loaders.svg?ic=three-dots" alt="loader" width="32" height="32">
+                        </div>
+                        <div class="loader bank" v-if="creating">
+                            <p>Creating account id</p>
+                            <img src="https://s2.svgbox.net/loaders.svg?ic=three-dots" alt="loader" width="32" height="32">
+                        </div>
+                        <label for="account">Account Number</label>
+                        <input type="text" id="account" v-model="accountNumber">
+                        <label for="country">Country</label>
+                        <select id="country" v-model="country" @change="getBanks()">
+                            <option value="ng">Nigeria</option>
+                            <option value="gh">Ghana</option>
+                            <option value="ke">Kenya</option>
+                        </select>
+                        <label for="bank" >Bank</label>
+                        <select id="bank" v-model="userBankCode">
+                            <option v-for="(bank,index) in banks" :key="index" :value="bank.code">
+                                {{bank.name}}
+                            </option>
+                        </select>
+                        <button id="ve" class="classified" @click="verifyBank()" :disabled="verifying">Verify Account</button>
+                        <img v-if="logging" id="load" src="https://s2.svgbox.net/loaders.svg?color=66C9FF&ic=spinner" alt="loader" width="32" height="32">
+                        <button v-if="!logging" class="classified" :disabled="!bankVerified && !creating" @click="createsubaccount()">Sign Up</button>
+                </div>
            </div>
    </div>
 </template>
@@ -155,13 +163,14 @@ export default {
          },
          getBanks(){
              // fetch banks based on country, using the flutter api
-             this.$http.get(`http://localhost:3000/flutter/banks/${this.country}`).then(res=>{
+             // No endpoint to fetch UK banks, so it was excluded
+             this.$http.get(`flutter/banks/${this.country}`).then(res=>{
                     this.banks=res.data.data;
                     this.bankLoading=false;
              })
          },
          createsubaccount(){
-              // a subaccount account is created for the shop owners
+              // a subaccount account is created for the shop owner
               this.creating=true;
               const sub = {
                         account_bank: this.userBankCode,
@@ -173,7 +182,7 @@ export default {
                         split_value: 0.975
                }
                this.error='';
-               this.$http.post('http://localhost:3000/flutter/subaccounts',
+               this.$http.post('flutter/subaccounts',
                     {
                         "account_bank": `${sub.account_bank}`,
                         "account_number": `${sub.account_number}`,
@@ -214,7 +223,7 @@ export default {
              this.accountName='';
              this.error='';
              this.verifying=true;
-             this.$http.post('http://localhost:3000/flutter/accounts/verify',bank)
+             this.$http.post('flutter/accounts/verify',bank)
              .then(res=>{
                    this.verifying=false;
                    if(res.data.message){
@@ -262,7 +271,7 @@ export default {
          },
          registerSeller(){
              this.logging=true;
-                    this.$http.post(`http://localhost:3000/auth/seller/register`,this.seller)
+                    this.$http.post(`auth/seller/register`,this.seller)
                     .then(res=>{
                     this.logging=false;
                     if(!res.data.loggedIn){
@@ -272,7 +281,7 @@ export default {
                         }
                     })
                     .catch(err=>{
-                     console.log('rgister error block',err.message);
+                     console.log('register error block',err.message);
                     })
          },
          registerBuyer(){
@@ -281,7 +290,7 @@ export default {
              if(this.buyerFields){
                     console.log('reg starting');
                     this.logging=true;
-                    this.$http.post(`http://localhost:3000/auth/buyer/register`,this.seller)
+                    this.$http.post(`auth/buyer/register`,this.seller)
                     .then(res=>{
                     this.logging=false;
                     if(!res.data.loggedIn){
@@ -291,14 +300,14 @@ export default {
                         }
                     })
                     .catch(err=>{
-                     console.log('rgister error block',err.message);
+                     console.log('register error block',err.message);
                     })
              }
          },
       },
       created(){
              this.loginRoute=`/${this.$route.params.id}/login`;
-             this.$http.get(`http://localhost:3000/flutter/banks/NG`).then(res=>{
+             this.$http.get(`/flutter/banks/NG`).then(res=>{
                     if(res.data.length>0){
                         this.banks=res.data.data;
                         this.bankLoading=false;
@@ -313,19 +322,47 @@ export default {
 <style scoped>
     div.register-container{
        background: #ffffff;
+       display: flex;
+       flex-wrap: wrap;
+       justify-content: space-between;
+       padding-bottom: 30px;
     }
     nav{
        padding: 10px 50px;
        box-shadow: 0px 1px 2px 0px rgba(102,96,102,1);
+       position: fixed;
+       width: 100%;
+       z-index: 10;
+       background: #ffffff;
     }
-    nav h3{
+    a{
+        text-decoration: none;
+    }
+    h3{
         color: #005B94;
         font-size: 2rem;
         line-height: 130%;
     }
+    div.welcome{
+        margin-top: 65px;
+        width: 40%;
+        padding: 10% 20px;
+        height: calc(100vh - 67px);
+    }
+    div.welcome h3{
+        font-size: 3rem;
+    }
+    div.welcome h4{
+       font-size: 2.2rem;
+       color: #66C9FF;
+    }
+    div.info{
+        margin-top: 100px;
+        width: 60%;
+    }
     div.steps{
         display: flex;
-        width: 70%;
+        width: 90%;
         margin: auto;
         margin-bottom: 20px;
         margin-top: 20px;
@@ -356,7 +393,7 @@ export default {
     }
     div.rule{
         height: 1.5px;
-        background: gray;
+        background: #66C9FF;
         position: absolute;
         width: calc(33.33% - 45px);
         transform: translate(calc(50% + 45px), -7px);
@@ -370,11 +407,12 @@ export default {
         font-size: 0.85rem;
     }
     div.details{
-        width: 50%;
+        width: 90%;
         padding: 40px 0px 20px 0px;
         margin:auto;
         position: relative;
-        border: black 1px solid;
+        border: #005B94 1.5px solid;
+        border-radius: 8px;
         padding: 30px;
     }
     label{
@@ -400,18 +438,23 @@ export default {
         border-color: #000000;
     }
     div.details button{
-        width: 40%;
+        width: 23%;
         height: 40px;
         display: block;
+        margin-left: auto;
         border: none;
+        border-radius: 8px;
         cursor: pointer;
         outline: none;
-        margin: auto;
-        background: #66C9FF;
+        background: #005B94;
         color: #ffffff;
     }
     div.details button:hover{
        box-shadow: 0px 1px 2px 0px rgba(102,96,102,1);
+    }
+    div.details button.classified{
+       width: 50%;
+       margin: auto;
     }
     div.loader.bank{
         margin-bottom: 0px;
@@ -444,9 +487,11 @@ export default {
         line-height: 135%;
         margin-bottom: 10px;
     }
-    p#huh{
-        margin-top: 17px;
-        text-align: center;
+    div.huh{
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
     }
     button:disabled{
         filter: brightness(0.5);
@@ -471,7 +516,22 @@ export default {
                 margin-bottom: 10px;
             }
             p.info,p.error{
-               font-size: 0.8rem;
+                font-size: 0.8rem;
+            }
+            div.welcome{
+                width: 100%;
+                height: auto;
+                padding: 10px 20px;
+            }
+            div.welcome h3{
+                font-size: 2.2rem;
+            }
+            div.welcome h4{
+                font-size: 1.5rem;
+            }
+            div.info{
+                margin-top: 15px;
+                width: 100%;
             }
      }
     
