@@ -14,4 +14,7 @@
   font-family: 'PT Sans', sans-serif;
   height: 100vh;
 }
+div#app input,div#app textarea,div#app select,div#app option{
+   font-size: 16px;
+}
 </style>

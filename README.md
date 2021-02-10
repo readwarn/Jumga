@@ -3,6 +3,7 @@ Jumga is marketplace created for buyer and sellers of product. A seller uses the
 
 ## Preview
 [Jumga live link](https://shielded-castle-16981.herokuapp.com/)
+
 ![Preview](https://github.com/readwarn/Jumga/blob/master/assets/preview.gif)
 
 ## Features
